@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #F8F9FA; display: flex; justify-content: center; }
         .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; padding-bottom: 40px; }
-        .titulo-pagina { font-size: 22px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .titulo-pagina { font-size: 22px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         
         /* ABAS DE NAVEGAÇÃO */
         .abas-container { display: flex; background-color: #F1F3F5; border-radius: 15px; padding: 4px; margin-bottom: 20px; }
@@ -33,10 +33,19 @@
     </style>
 </head>
 <body>
+
     <div class="celular-container">
         <div class="titulo-pagina">📊 Melhor Opção</div>
         
-        <!-- Abas de Navegação Corrigidas -->
+        <!-- Banner de Destaque da Economia Real (Marketing) -->
+        <div style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9); border: 1px solid #81C784; padding: 15px; border-radius: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 10px rgba(46,125,50,0.06);">
+            <span style="font-size: 24px;">🎉</span>
+            <h3 style="color: #1B5E20; font-size: 14px; font-weight: 700; margin-top: 5px;">Sia Economia Potencial</h3>
+            <p style="font-size: 24px; color: #2E7D32; font-weight: 800; margin: 4px 0;">R$ {{ dados.economia_consolidada|floatformat:2 }}</p>
+            <p style="font-size: 11px; color: #388E3C; font-weight: 600;">economizados em relação à filial mais cara do Tarumã!</p>
+        </div>
+
+        <!-- Abas de Navegação -->
         <div class="abas-container">
             <div class="aba ativa">Comprar Tudo Junto</div>
             <a href="/rota-cestia/" class="aba" style="text-decoration: none; color: #495057;">Fazer Rota (Mapa)</a>
@@ -53,6 +62,14 @@
             <div class="detalhe-custo">Produtos: R$ {{ m.total_produtos|floatformat:2 }} + Deslocamento</div>
             
             <div class="distancia-tag">📍 {{ m.distancia_km }} km de distância</div>
+            
+            <!-- Etiqueta de Economia Detalhada por Loja Individual -->
+            {% if m.economia_reais > 0 %}
+            <br>
+            <div style="color: #2E7D32; font-size: 11px; font-weight: 700; margin-top: 8px; background-color: #E8F5E9; display: inline-block; padding: 4px 10px; border-radius: 10px; border: 1px solid #A5D6A7;">
+                💰 Economiza R$ {{ m.economia_reais|floatformat:2 }}
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
 
@@ -67,5 +84,6 @@
             </div>
         </div>
     </div>
+
 </body>
 </html>

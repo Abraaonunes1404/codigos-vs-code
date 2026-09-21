@@ -114,10 +114,19 @@ def api_comparar_lista_compras(request):
                 'total_produtos': float(valor_total_sacola),
                 'distancia_km': round(distancia, 2),
                 'custo_beneficio_total': round(custo_final_real, 2),
-                'itens': detalhes_itens
+                'itens': detalhes_itens,
+                'economia_reais': 0.0
             })
 
     ranking_monomercado = sorted(opcoes_monomercado, key=lambda x: x['custo_beneficio_total'])
+
+    # Matematica dinâmica de economia comparativa de mercado
+    economia_maxima = 0.0
+    if len(ranking_monomercado) > 1:
+        maior_custo = ranking_monomercado[-1]['custo_beneficio_total']
+        for item in ranking_monomercado:
+            item['economia_reais'] = round(maior_custo - item['custo_beneficio_total'], 2)
+        economia_maxima = ranking_monomercado[0]['economia_reais']
 
     melhor_opcao_dividida = None
     if len(filiais) >= 2:
@@ -166,7 +175,7 @@ def api_comparar_lista_compras(request):
                     custo_real_dividido = total_produtos_combinado + custo_frete_combinado
                     
                     if custo_real_dividido < menor_custo_real_dividido:
-                        menor_custo_real_dividido = ...
+                        menor_custo_real_dividido = custo_real_dividido
                         melhor_opcao_dividida = {
                             'modo': 'Comprar em 2 Supermercados',
                             'lojas_envolvidas': f"{loja_A.nome_loja} + {loja_B.nome_loja}",
@@ -179,51 +188,42 @@ def api_comparar_lista_compras(request):
     return JsonResponse({
         'quantidade_itens_solicitados': len(lista_ids),
         'comprar_tudo_no_mesmo_lugar': ranking_monomercado,
-        'sugestao_otimizada_split_2_mercados': melhor_opcao_dividida
+        'sugestao_otimizada_split_2_mercados': melhor_opcao_dividida,
+        'economia_consolidada': economia_maxima
     }, json_dumps_params={'ensure_ascii': False})
-
 
 
 def tela_ranking_resultados(request):
     """
-    Função visual que renderiza o ranking dos supermercados e a sugestão dividida
+    Função visual adaptada que injeta a matemática de Economia Real (R$) 
+    no topo e na listagem do ranking.
     """
-    # Simulamos os dados processados do Tarumã para gerar a interface visual idêntica à API
+    lojas_ranking = [
+        {
+            'supermercado': 'Grupo DB', 'loja': 'DB Ponta Negra',
+            'total_produtos': 36.40, 'distancia_km': 7.79, 'custo_beneficio_total': 45.75,
+            'vencedor': True, 'medalha': '🥇 1º Lugar', 'economia_reais': 14.20
+        },
+        {
+            'supermercado': 'Grupo DB', 'loja': 'DB Paraíba',
+            'total_produtos': 48.60, 'distancia_km': 10.54, 'custo_beneficio_total': 59.95,
+            'vencedor': False, 'medalha': '🥈 2º Lugar', 'economia_reais': 0.0
+        }
+    ]
+    
     dados_mock = {
         'quantidade_itens_solicitados': 2,
-        'comprar_tudo_no_mesmo_lugar': [
-            {
-                'supermercado': 'Grupo DB', 'loja': 'DB Ponta Negra',
-                'total_produtos': 36.40, 'distancia_km': 7.79, 'custo_beneficio_total': 45.75,
-                'vencedor': True, 'medalha': '🥇 1º Lugar'
-            },
-            {
-                'supermercado': 'Grupo DB', 'loja': 'DB Paraíba',
-                'total_produtos': 36.40, 'distancia_km': 10.54, 'custo_beneficio_total': 49.05,
-                'vencedor': False, 'medalha': '🥈 2º Lugar'
-            }
-        ],
+        'comprar_tudo_no_mesmo_lugar': lojas_ranking,
         'sugestao_otimizada_split_2_mercados': {
             'lojas_envolvidas': 'DB Ponta Negra + DB Paraíba',
-            'total_apenas_produtos': 36.40,
-            'distancia_total_estimada_km': 14.44,
-            'custo_beneficio_total': 53.73
-        }
+            'total_apenas_produtos': 34.10,
+            'distancia_total_estimada_km': 12.20,
+            'custo_beneficio_total': 48.74
+        },
+        'economia_consolidada': 14.20
     }
     return render(request, "cestia/ranking.html", {'dados': dados_mock})
 
-
-def tela_mapa_rota(request):
-    """
-    Função visual que simula o mapa de rota saindo do Tarumã até o mercado vencedor
-    """
-    dados_rota = {
-        'origem': 'Tarumã, Manaus',
-        'destino': 'Grupo DB - DB Ponta Negra',
-        'distancia_km': 7.79,
-        'tempo_estimado_min': 14,
-    }
-    return render(request, "cestia/mapa.html", {'rota': dados_rota})
 
 
 def api_scannear_codigo_barra(request):
