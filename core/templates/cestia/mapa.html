@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rota de Compras - Cestia</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #F8F9FA; display: flex; justify-content: center; }
+        .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; padding-bottom: 40px; }
+        .titulo-pagina { font-size: 22px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        
+        .abas-container { display: flex; background-color: #F1F3F5; border-radius: 15px; padding: 4px; margin-bottom: 20px; }
+        .aba { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; color: #495057; border-radius: 12px; }
+        .aba.ativa { background-color: #FF6D00; color: #FFF; }
+        
+        /* BOX DO MAPA SIMULADO */
+        .mapa-box { width: 100%; height: 320px; background-color: #E8F5E9; border-radius: 25px; border: 2px solid #A5D6A7; position: relative; overflow: hidden; box-shadow: inset 0 0 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        /* Elementos visuais imitando ruas e pinos de Manaus */
+        .rua-falsa-1 { position: absolute; top: 140px; left: 0; right: 0; height: 30px; background-color: #FFF; transform: rotate(-15deg); border-top: 2px dashed #DDD; border-bottom: 2px dashed #DDD; }
+        .rua-falsa-2 { position: absolute; top: 0; bottom: 0; left: 160px; width: 30px; background-color: #FFF; border-left: 2px dashed #DDD; border-right: 2px dashed #DDD; }
+        .linha-trajeto { position: absolute; top: 120px; left: 80px; width: 180px; height: 60px; border-bottom: 6px solid #00E5FF; border-right: 6px solid #00E5FF; border-bottom-right-radius: 20px; }
+        
+        .pino-casa { position: absolute; top: 100px; left: 65px; font-size: 26px; cursor: pointer; }
+        .pino-mercado { position: absolute; top: 155px; left: 245px; font-size: 26px; cursor: pointer; }
+        
+        /* INFORMAÇÕES DE TRAJETO */
+        .card-info-rota { background-color: #FFF; border: 1px solid #E0E0E0; padding: 18px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .linha-info { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .circulo-pino { width: 12px; height: 12px; border-radius: 50%; }
+        .nome-ponto { font-size: 14px; font-weight: 600; color: #333; }
+        
+        .resumo-tempo { display: flex; justify-content: space-between; border-top: 1px solid #EEE; padding-top: 15px; margin-top: 15px; }
+        .bloco-tempo { text-align: center; flex: 1; }
+        .num-tempo { font-size: 20px; font-weight: 800; color: #FF6D00; }
+        .txt-tempo { font-size: 11px; color: #777; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <div class="celular-container">
+        <div class="titulo-pagina">🗺️ Rota de Entrega</div>
+        
+        <div class="abas-container">
+            <a href="/resultado-cestia/" class="aba" style="text-decoration: none; color: #495057;">Comprar Tudo Junto</a>
+            <div class="aba ativa">Fazer Rota (Mapa)</div>
+        </div>
+
+        <!-- Área Gráfica do Mapa Simulado -->
+        <div class="mapa-box">
+            <div class="rua-falsa-1"></div>
+            <div class="rua-falsa-2"></div>
+            <div class="linha-trajeto"></div>
+            
+            <div class="pino-casa" title="Sua Casa">🏠<div style="font-size:9px; font-weight:bold; background:#FFF; padding:2px 5px; border-radius:5px; border:1px solid #CCC; margin-top:-5px;">Tarumã</div></div>
+            <div class="pino-mercado" title="Supermercado">🛒<div style="font-size:9px; font-weight:bold; background:#FF6D00; color:#FFF; padding:2px 5px; border-radius:5px; margin-top:-5px;">DB Ponta Negra</div></div>
+        </div>
+
+        <!-- Detalhes do Percurso -->
+        <div class="card-info-rota">
+            <div class="linha-info">
+                <div class="circulo-pino" style="background-color: #00E5FF;"></div>
+                <div>
+                    <div style="font-size: 11px; color: #999;">SAÍDA</div>
+                    <div class="nome-ponto">{{ rota.origem }}</div>
+                </div>
+            </div>
+            <div class="linha-info" style="margin-bottom: 0;">
+                <div class="circulo-pino" style="background-color: #FF6D00;"></div>
+                <div>
+                    <div style="font-size: 11px; color: #999;">DESTINO CAMPEÃO</div>
+                    <div class="nome-ponto">{{ rota.destino }}</div>
+                </div>
+            </div>
+            
+            <div class="resumo-tempo">
+                <div class="bloco-tempo" style="border-right: 1px solid #EEE;">
+                    <div class="num-tempo">{{ rota.distancia_km }} km</div>
+                    <div class="txt-tempo">Distância</div>
+                </div>
+                <div class="bloco-tempo">
+                    <div class="num-tempo">~{{ rota.tempo_estimado_min }} min</div>
+                    <div class="txt-tempo">Tempo de Carro</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

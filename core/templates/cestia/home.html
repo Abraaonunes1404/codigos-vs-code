@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cestia - Comparador Inteligente</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #F8F9FA; color: #212121; display: flex; justify-content: center; }
+        .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding-bottom: 40px; }
+        .topo { background-color: #FF6D00; padding: 40px 20px 30px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
+        .titulo-app { font-size: 28px; font-weight: bold; color: #FFF; letter-spacing: 0.5px; }
+        .boas-vindas { font-size: 15px; color: #FFE0B2; margin-top: 4px; }
+        .localizacao-box { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; background-color: rgba(255, 255, 255, 0.15); padding: 8px 15px; border-radius: 20px; }
+        .texto-gps { color: #FFF; font-size: 13px; font-weight: 600; }
+        .btn-bairro { background-color: #FFF; color: #FF6D00; border: none; padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .busca-container { display: flex; margin: -20px 20px 0 20px; background-color: #FFF; border-radius: 25px; padding-left: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); align-items: center; border: 1px solid #FFE0B2; overflow: hidden; }
+        .campo-busca { flex: 1; height: 48px; border: none; outline: none; font-size: 14px; color: #333; }
+        .btn-camera { background-color: #00E5FF; border: none; height: 48px; width: 55px; font-size: 18px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .conteudo { padding: 25px 20px; }
+        .titulo-sessao { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #333; }
+        .grade-categorias { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 10px; }
+        .item-categoria { display: flex; flex-direction: column; align-items: center; text-decoration: none; flex: 1; cursor: pointer; }
+        .circulo-icone { width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; margin-bottom: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.05); }
+        .nome-categoria { font-size: 11px; color: #555; font-weight: 600; text-align: center; }
+        .card-lgpd { background-color: #E0F7FA; border-left: 4px solid #00E5FF; padding: 12px; border-radius: 15px; margin-top: 15px; }
+        .texto-lgpd { font-size: 12px; color: #006064; line-height: 16px; }
+    </style>
+</head>
+<body>
+    <div class="celular-container">
+        <div class="topo">
+            <div class="titulo-app">Cestia</div>
+            <div class="boas-vindas">Olá! Qual item vai para a sua cesta hoje?</div>
+            <div class="localizacao-box">
+                <div class="texto-gps">📍 Tarumã, Manaus</div>
+                <button class="btn-bairro">Alterar Bairro</button>
+            </div>
+        </div>
+        <div class="busca-container">
+            <input type="text" class="campo-busca" placeholder="Busque por produto, marca ou código...">
+            <button class="btn-camera">📷</button>
+        </div>
+        <div class="conteudo">
+            <div class="titulo-sessao">Navegue por Categorias</div>
+            <div class="grade-categorias">
+                <div class="item-categoria">
+                    <div class="circulo-icone" style="background-color: #FF6D00;">🛒</div>
+                    <div class="nome-categoria">Mercearia</div>
+                </div>
+                <div class="item-categoria">
+                    <div class="circulo-icone" style="background-color: #E65100;">🥩</div>
+                    <div class="nome-categoria">Carnes</div>
+                </div>
+                <div class="item-categoria">
+                    <div class="circulo-icone" style="background-color: #FF9100;">🥦</div>
+                    <div class="nome-categoria">Hortifrúti</div>
+                </div>
+                <div class="item-categoria">
+                    <div class="circulo-icone" style="background-color: #FFA726;">🧼</div>
+                    <div class="nome-categoria">Limpeza</div>
+                </div>
+            </div>
+            <div class="card-lgpd">
+                <div class="texto-lgpd">
+                    ⚡ <strong>Acesso Rápido Ativo:</strong> Você está navegando de forma anônima. Seus dados de localização estão protegidos conforme as diretrizes da LGPD.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

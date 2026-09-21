@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado da Cesta - Cestia</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #F8F9FA; display: flex; justify-content: center; }
+        .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; padding-bottom: 40px; }
+        .titulo-pagina { font-size: 22px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        
+        /* ABAS DE NAVEGAÇÃO */
+        .abas-container { display: flex; background-color: #F1F3F5; border-radius: 15px; padding: 4px; margin-bottom: 20px; }
+        .aba { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; color: #495057; border-radius: 12px; }
+        .aba.ativa { background-color: #FF6D00; color: #FFF; }
+        
+        /* CARDS DO RANKING */
+        .card-mercado { border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #E0E0E0; position: relative; }
+        .card-mercado.vencedor { border: 2px solid #FF6D00; background-color: #FFF8F3; }
+        .medalha-tag { position: absolute; top: 15px; right: 18px; font-size: 12px; font-weight: bold; color: #FF6D00; }
+        .nome-loja { font-size: 16px; font-weight: bold; color: #212121; }
+        .sub-loja { font-size: 12px; color: #777; margin-bottom: 12px; }
+        .preco-total { font-size: 24px; font-weight: 800; color: #FF6D00; margin-bottom: 4px; }
+        .detalhe-custo { font-size: 11px; color: #888; }
+        .distancia-tag { display: inline-block; background-color: #E0F7FA; color: #006064; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 12px; margin-top: 10px; }
+        
+        /* BLOCO DO SPLIT BIMERCADO */
+        .bloco-split { background-color: #E0F7FA; border-radius: 20px; padding: 18px; border-left: 5px solid #00E5FF; margin-top: 25px; }
+        .titulo-split { font-size: 14px; font-weight: bold; color: #006064; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+        .texto-split { font-size: 12px; color: #006064; line-height: 18px; }
+        .valores-split { font-size: 13px; font-weight: bold; margin-top: 8px; color: #004d40; }
+    </style>
+</head>
+<body>
+    <div class="celular-container">
+        <div class="titulo-pagina">📊 Melhor Opção</div>
+        
+        <!-- Abas de Navegação Corrigidas -->
+        <div class="abas-container">
+            <div class="aba ativa">Comprar Tudo Junto</div>
+            <a href="/rota-cestia/" class="aba" style="text-decoration: none; color: #495057;">Fazer Rota (Mapa)</a>
+        </div>
+
+        <!-- Exibe os supermercados do ranking -->
+        {% for m in dados.comprar_tudo_no_mesmo_lugar %}
+        <div class="card-mercado {% if m.vencedor %}vencedor{% endif %}">
+            <div class="medalha-tag">{{ m.medalha }}</div>
+            <div class="nome-loja">{{ m.supermercado }}</div>
+            <div class="sub-loja">{{ m.loja }}</div>
+            
+            <div class="preco-total">R$ {{ m.custo_beneficio_total|floatformat:2 }}</div>
+            <div class="detalhe-custo">Produtos: R$ {{ m.total_produtos|floatformat:2 }} + Deslocamento</div>
+            
+            <div class="distancia-tag">📍 {{ m.distancia_km }} km de distância</div>
+        </div>
+        {% endfor %}
+
+        <!-- Bloco de Análise do Split Bimercado -->
+        <div class="bloco-split">
+            <div class="titulo-split">💡 Análise de Compra Dividida</div>
+            <div class="texto-split">
+                Para esta lista, <strong>não vale a pena</strong> visitar dois supermercados. Dividindo os produtos, o custo extra do deslocamento casado ({{ dados.sugestao_otimizada_split_2_mercados.distancia_total_estimada_km }} km) anularia a economia dos itens.
+            </div>
+            <div class="valores-split">
+                Total se dividido: R$ {{ dados.sugestao_otimizada_split_2_mercados.custo_beneficio_total|floatformat:2 }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

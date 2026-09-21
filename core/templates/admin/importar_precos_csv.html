@@ -1,0 +1,18 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+    <p>Selecione a filial e envie o arquivo CSV no formato <strong>EAN;PRECO</strong> para atualizar em massa.</p>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset class="module aligned">
+            <div class="form-row">
+                {{ form.as_p }}
+            </div>
+        </fieldset>
+        <div class="submit-row">
+            <input type="submit" value="Iniciar Importação" class="default">
+        </div>
+    </form>
+</div>
+{% endblock %}
