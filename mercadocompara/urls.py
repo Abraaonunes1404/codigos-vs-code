@@ -7,7 +7,6 @@ urlpatterns = [
     path('cesta/', tela_cesta_compras, name='cesta'),
     path('resultado-cestia/', tela_ranking_resultados, name='ranking_visual'),
     path('rota-cestia/', tela_mapa_rota, name='mapa_visual'),
-    # Nova rota para o leitor de código de barras:
     path('api/scan/', api_scannear_codigo_barra, name='api_scan'),
     path('admin/', admin.site.urls),
     path('api/comparar/', api_comparar_produto, name='api_comparar'),
