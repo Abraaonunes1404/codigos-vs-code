@@ -196,7 +196,7 @@ def api_comparar_lista_compras(request):
 def tela_ranking_resultados(request):
     """
     Função visual adaptada que injeta a matemática de Economia Real (R$) 
-    no topo e na listagem do ranking.
+    no topo e na listagem do ranking de forma corrigida.
     """
     lojas_ranking = [
         {
@@ -211,6 +211,12 @@ def tela_ranking_resultados(request):
         }
     ]
     
+    # CORREÇÃO CIRÚRGICA: Pega as posições exatas da lista
+    loja_mais_cara = lojas_ranking[1]['custo_beneficio_total']
+    loja_mais_barata = lojas_ranking[0]['custo_beneficio_total']
+    
+    economia_maxima = round(loja_mais_cara - loamais_barata, 2)
+    
     dados_mock = {
         'quantidade_itens_solicitados': 2,
         'comprar_tudo_no_mesmo_lugar': lojas_ranking,
@@ -220,9 +226,10 @@ def tela_ranking_resultados(request):
             'distancia_total_estimada_km': 12.20,
             'custo_beneficio_total': 48.74
         },
-        'economia_consolidada': 14.20
+        'economia_consolidada': economia_maxima
     }
     return render(request, "cestia/ranking.html", {'dados': dados_mock})
+
 
 
 
