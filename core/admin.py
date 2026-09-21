@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import path
 from django.contrib import messages
-from .models import Categoria, Produto, Supermercado, Filial, HistoricoPreco
+from .models import Categoria, Produto, Supermercado, Filial, HistoricoPreco, AlertaPreco
 from .forms import UploadPrecosForm
 
 # Registros padrão no painel administrativo
@@ -80,3 +80,6 @@ class HistoricoPrecoAdmin(admin.ModelAdmin):
             'title': 'Importar Planilha de Preços por Filial'
         }
         return render(request, "admin/importar_precos_csv.html", contexto)
+
+# Ativa o controle visual dos alertas no painel administrativo do Django
+admin.site.register(AlertaPreco)
