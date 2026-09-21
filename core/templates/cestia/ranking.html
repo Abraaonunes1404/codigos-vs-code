@@ -51,6 +51,24 @@
             <a href="/rota-cestia/" class="aba" style="text-decoration: none; color: #495057;">Fazer Rota (Mapa)</a>
         </div>
 
+                <!-- Botão Moderno de Compartilhar Economia no WhatsApp -->
+        <div style="margin: -5px 15px 20px 15px;">
+            <a href="#" id="btn-whatsapp" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #25D366; color: #FFF; text-decoration: none; padding: 12px; border-radius: 15px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 10px rgba(37,211,102,0.2);">
+                <span>💬</span> Compartilhar Economia no WhatsApp
+            </a>
+        </div>
+
+        <script>
+            // Script inteligente que monta a mensagem personalizada para o WhatsApp
+            document.addEventListener("DOMContentLoaded", function() {
+                var economia = "{{ dados.economia_consolidada|floatformat:2 }}";
+                var texto = "Olha só que top! 🎯 Acabei de economizar R$ " + economia + " na minha lista de compras usando o *Cestia*! O app comparou os preços nos mercados do Tarumã e me deu a rota mais barata. Faz o teste você também no link: https://cestia.com.br";
+                
+                var linkLink = "https://whatsapp.com" + encodeURIComponent(texto);
+                document.getElementById("btn-whatsapp").setAttribute("href", linkLink);
+            });
+        </script>
+
         <!-- Exibe os supermercados do ranking -->
         {% for m in dados.comprar_tudo_no_mesmo_lugar %}
         <div class="card-mercado {% if m.vencedor %}vencedor{% endif %}">
