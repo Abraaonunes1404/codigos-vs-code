@@ -388,17 +388,25 @@ def api_verificar_alertas_preco(request):
     }, json_dumps_params={'ensure_ascii': False})
 
 
+from django.contrib.auth.decorators import user_passes_test
+
+# Função auxiliar que valida se o usuário é administrador do Cestia
+def e_administrador(user):
+    return user.is_superuser
+
+@user_passes_test(e_administrador, login_url='/admin/login/')
 def tela_atualizar_preco_lojista(request):
     """
-    Renderiza a interface visual para o lojista atualizar precos de forma rápida
+    Renderiza a interface visual para o lojista atualizar precos de forma rápida (Protegido)
     """
     filiais = Filial.objects.all()
     produtos = Produto.objects.all()
     return render(request, "cestia/cadastro_preco.html", {'filiais': filiais, 'produtos': produtos})
 
+@user_passes_test(e_administrador, login_url='/admin/login/')
 def api_salvar_preco_rapido(request):
     """
-    Recebe os dados digitados na tela do lojista e atualiza ou cria o preco no banco
+    Recebe os dados digitados na tela do lojista e atualiza ou cria o preco no banco (Protegido)
     """
     if request.method == "POST":
         from django.contrib import messages
