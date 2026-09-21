@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-cz*+q3pb$zr)cge(7w&@swtan7-&p=dy)0ai-$b7xb4xv&-#4f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['cestia.com.br', '://cestia.com.br', '.render.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'cestia.com.br', '.cestia.com.br', '.onrender.com', '*']
 
 
 # Application definition
