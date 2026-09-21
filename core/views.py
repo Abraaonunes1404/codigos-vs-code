@@ -386,3 +386,42 @@ def api_verificar_alertas_preco(request):
         'alertas_analisados_total': alertas_ativos.count(),
         'oportunidades_de_economia_encontradas': alertas_disparados
     }, json_dumps_params={'ensure_ascii': False})
+
+
+def tela_atualizar_preco_lojista(request):
+    """
+    Renderiza a interface visual para o lojista atualizar precos de forma rápida
+    """
+    filiais = Filial.objects.all()
+    produtos = Produto.objects.all()
+    return render(request, "cestia/cadastro_preco.html", {'filiais': filiais, 'produtos': produtos})
+
+def api_salvar_preco_rapido(request):
+    """
+    Recebe os dados digitados na tela do lojista e atualiza ou cria o preco no banco
+    """
+    if request.method == "POST":
+        from django.contrib import messages
+        from django.shortcuts import redirect
+        
+        filial_id = request.POST.get('filial')
+        produto_id = request.POST.get('produto')
+        preco_texto = request.POST.get('preco', '').replace(',', '.').strip()
+        
+        try:
+            filial = Filial.objects.get(id=filial_id)
+            produto = Produto.objects.get(id=produto_id)
+            preco_float = float(preco_texto)
+            
+            # Atualiza se já existir ou cria um novo registro de preço
+            HistoricoPreco.objects.update_or_create(
+                produto=produto,
+                filial=filial,
+                defaults={'preco': preco_float}
+            )
+            
+            messages.success(request, f'✅ R$ {preco_float:.2f} salvo para {produto.nome} no {filial.nome_loja}!')
+        except (Filial.DoesNotExist, Produto.DoesNotExist, ValueError):
+            messages.error(request, '❌ Erro ao salvar. Verifique o valor digitado.')
+            
+        return redirect('atualizar_preco_lojista')
