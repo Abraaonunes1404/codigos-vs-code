@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from core.models import Produto, Filial, HistoricoPreco
+from core.models import Produto, Filial, HistoricoPreco, AlertaPreco
 import math
 
 def calcular_distancia(lat1, lon1, lat2, lon2):
@@ -282,3 +282,40 @@ def tela_cesta_vazia(request):
     Renderiza a tela do carrinho sem nenhum produto cadastrado
     """
     return render(request, "cestia/cesta.html", {'produtos': []})
+
+
+
+def api_verificar_alertas_preco(request):
+    """
+    Motor inteligente (Robô) que simula a varredura de preços nas filiais
+    e dispara gatilhos de aviso quando encontra valores abaixo do esperado.
+    """
+    alertas_disparados = []
+    alertas_ativos = AlertaPreco.objects.filter(ativo=True)
+    filiais = Filial.objects.all()
+
+    for alerta in alertas_ativos:
+        for filial in filiais:
+            try:
+                # Busca o preço atualizado daquele item nessa filial específica
+                registro = HistoricoPreco.objects.get(produto=alerta.produto, filial=filial)
+                
+                # SE O PREÇO DO MERCADO FOR MENOR OU IGUAL AO PREÇO QUE O CLIENTE QUER PAGAR:
+                if registro.preco <= alerta.preco_alvo:
+                    alertas_disparados.append({
+                        'produto': alerta.produto.nome,
+                        'marca': alerta.produto.marca,
+                        'preco_encontrado': float(registro.preco),
+                        'supermercado': filial.supermercado.nome,
+                        'loja_promocao': filial.nome_loja,
+                        'notificado_para': alerta.email_notificacao,
+                        'status_envio': '✉️ E-mail de Alerta Disparado com Sucesso!'
+                    })
+            except HistoricoPreco.DoesNotExist:
+                continue
+
+    return JsonResponse({
+        'robo_status': 'Varredura de Rotina Concluída',
+        'alertas_analisados_total': alertas_ativos.count(),
+        'oportunidades_de_economia_encontradas': alertas_disparados
+    }, json_dumps_params={'ensure_ascii': False})

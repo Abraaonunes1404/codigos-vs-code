@@ -33,3 +33,17 @@ class HistoricoPreco(models.Model):
     class Meta:
         unique_together = ('produto', 'filial')
     def __str__(self): return f"{self.produto.nome} no {self.filial.nome_loja} - R$ {self.preco}"
+
+
+class AlertaPreco(models.Model):
+    """
+    Tabela que armazena os alertas de preços configurados pelos clientes
+    """
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE, verbose_name="Produto")
+    preco_alvo = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Preço Alvo (R$)")
+    email_notificacao = models.EmailField(verbose_name="E-mail para Aviso")
+    ativo = models.BooleanField(default=True, verbose_name="Alerta Ativo")
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Alerta: {self.produto.nome} abaixo de R$ {self.preco_alvo}"

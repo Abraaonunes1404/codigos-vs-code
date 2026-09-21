@@ -4,10 +4,12 @@ from core.views import (
     api_comparar_produto, api_comparar_lista_compras, 
     tela_home_cestia, tela_cesta_compras, tela_ranking_resultados, 
     tela_mapa_rota, api_scannear_codigo_barra, tela_scanner_camera,
-    api_limpar_cesta, tela_cesta_vazia
+    api_limpar_cesta, tela_cesta_vazia, api_verificar_alertas_preco
 )
 
 urlpatterns = [
+    # Adicione esta linha dentro do urlpatterns do seu urls.py:
+    path('api/verificar-alertas/', api_verificar_alertas_preco, name='verificar_alertas'),
     path('', tela_home_cestia, name='home'),
     path('cesta/', tela_cesta_compras, name='cesta'),
     path('cesta-vazia/', tela_cesta_vazia, name='cesta_vazia'),
