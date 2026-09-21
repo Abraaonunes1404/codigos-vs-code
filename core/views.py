@@ -224,3 +224,37 @@ def tela_mapa_rota(request):
         'tempo_estimado_min': 14,
     }
     return render(request, "cestia/mapa.html", {'rota': dados_rota})
+
+
+def api_scannear_codigo_barra(request):
+    """
+    Motor inteligente que recebe o código de barras lido pela câmera do celular
+    e adiciona o produto automaticamente na cesta do cliente.
+    Exemplo de uso: http://127.0.0
+    """
+    # Captura o número do EAN enviado pela câmera do smartphone
+    codigo_ean = request.GET.get('ean', '').strip()
+    
+    if not codigo_ean:
+        return JsonResponse({'erro': 'Nenhum código de barras foi detectado pela câmera'}, status=400)
+        
+    try:
+        # Busca no banco central se esse código de barras já existe cadastrado
+        produto = Produto.objects.get(gtin_ean=codigo_ean)
+        
+        # Responde para o aplicativo o sucesso, trazendo os dados do produto para pular para a tela da cesta
+        return JsonResponse({
+            'sucesso': True,
+            'mensagem': f'Produto {produto.nome} adicionado com sucesso!',
+            'produto_id': produto.id,
+            'nome': produto.nome,
+            'marca': produto.marca
+        }, json_dumps_params={'ensure_ascii': False})
+        
+    except Produto.DoesNotExist:
+        # Se o código escaneado for novo e não existir no sistema ainda
+        return JsonResponse({
+            'sucesso': False,
+            'erro': 'Produto não cadastrado',
+            'mensagem': 'Este código de barras ainda não existe na nossa base central.'
+        }, status=404, json_dumps_params={'ensure_ascii': False})
