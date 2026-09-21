@@ -10,7 +10,7 @@
         .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; padding-bottom: 40px; }
         .titulo-pagina { font-size: 22px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         
-        /* ABAS DE NAVEGAÇÃO */
+        /* ABAS DE NAVEGAï¿½ï¿½O */
         .abas-container { display: flex; background-color: #F1F3F5; border-radius: 15px; padding: 4px; margin-bottom: 20px; }
         .aba { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; color: #495057; border-radius: 12px; }
         .aba.ativa { background-color: #FF6D00; color: #FFF; }
@@ -35,23 +35,23 @@
 <body>
 
     <div class="celular-container">
-        <div class="titulo-pagina">?? Melhor Opção</div>
+        <div class="titulo-pagina">?? Melhor Opï¿½ï¿½o</div>
         
         <!-- Banner de Destaque da Economia Real (Marketing) -->
         <div style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9); border: 1px solid #81C784; padding: 15px; border-radius: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 10px rgba(46,125,50,0.06);">
             <span style="font-size: 24px;">??</span>
             <h3 style="color: #1B5E20; font-size: 14px; font-weight: 700; margin-top: 5px;">Sua Economia Potencial</h3>
             <p style="font-size: 24px; color: #2E7D32; font-weight: 800; margin: 4px 0;">R$ {{ dados.economia_consolidada|floatformat:2 }}</p>
-            <p style="font-size: 11px; color: #388E3C; font-weight: 600;">economizados em relação à filial mais cara do Tarumã!</p>
+            <p style="font-size: 11px; color: #388E3C; font-weight: 600;">economizados em relaï¿½ï¿½o ï¿½ filial mais cara do Tarumï¿½!</p>
         </div>
 
-        <!-- Abas de Navegação -->
+        <!-- Abas de Navegaï¿½ï¿½o -->
         <div class="abas-container">
             <div class="aba ativa">Comprar Tudo Junto</div>
             <a href="/rota-cestia/" class="aba" style="text-decoration: none; color: #495057;">Fazer Rota (Mapa)</a>
         </div>
 
-                        <!-- Botão Moderno de Compartilhar Economia no WhatsApp (Versão Universal) -->
+                        <!-- Botï¿½o Moderno de Compartilhar Economia no WhatsApp (Versï¿½o Universal) -->
         <div style="margin: -5px 15px 20px 15px;">
             <a href="#" id="btn-whatsapp" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #25D366; color: #FFF; text-decoration: none; padding: 12px; border-radius: 15px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 10px rgba(37,211,102,0.2);">
                 <span>??</span> Compartilhar Economia no WhatsApp
@@ -62,7 +62,7 @@
             // Script atualizado com o redirecionador universal wa.me
             document.addEventListener("DOMContentLoaded", function() {
                 var economia = "{{ dados.economia_consolidada|floatformat:2 }}";
-                var texto = "Olha só que top! ?? Acabei de economizar R$ " + economia + " na minha lista de compras usando o *Cestia*! O app comparou os preços nos mercados do Tarumã e me deu a rota mais barata. Faz o teste você também no link: https://cestia.com.br";
+                var texto = "Olha sï¿½ que top! ?? Acabei de economizar R$ " + economia + " na minha lista de compras usando o *Cestia*! O app comparou os preï¿½os nos mercados do Tarumï¿½ e me deu a rota mais barata. Faz o teste vocï¿½ tambï¿½m no link: https://cestia.com.br";
                 
                 var linkLink = "https://wa.me" + encodeURIComponent(texto);
                 document.getElementById("btn-whatsapp").setAttribute("href", linkLink);
@@ -80,7 +80,7 @@
             <div class="preco-total">R$ {{ m.custo_beneficio_total|floatformat:2 }}</div>
             <div class="detalhe-custo">Produtos: R$ {{ m.total_produtos|floatformat:2 }} + Deslocamento</div>
             
-            <div class="distancia-tag">?? {{ m.distancia_km }} km de distância</div>
+            <div class="distancia-tag">?? {{ m.distancia_km }} km de distï¿½ncia</div>
             
             <!-- Etiqueta de Economia Detalhada por Loja Individual -->
             {% if m.economia_reais > 0 %}
@@ -92,11 +92,11 @@
         </div>
         {% endfor %}
 
-        <!-- Bloco de Análise do Split Bimercado -->
+        <!-- Bloco de Anï¿½lise do Split Bimercado -->
         <div class="bloco-split">
-            <div class="titulo-split">?? Análise de Compra Dividida</div>
+            <div class="titulo-split">?? Anï¿½lise de Compra Dividida</div>
             <div class="texto-split">
-                Para esta lista, <strong>não vale a pena</strong> visitar dois supermercados. Dividindo os produtos, o custo extra do deslocamento casado ({{ dados.sugestao_otimizada_split_2_mercados.distancia_total_estimada_km }} km) anularia a economia dos itens.
+                Para esta lista, <strong>nï¿½o vale a pena</strong> visitar dois supermercados. Dividindo os produtos, o custo extra do deslocamento casado ({{ dados.sugestao_otimizada_split_2_mercados.distancia_total_estimada_km }} km) anularia a economia dos itens.
             </div>
             <div class="valores-split">
                 Total se dividido: R$ {{ dados.sugestao_otimizada_split_2_mercados.custo_beneficio_total|floatformat:2 }}
