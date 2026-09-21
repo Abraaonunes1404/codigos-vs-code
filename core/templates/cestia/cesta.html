@@ -34,6 +34,12 @@
             {% endfor %}
         {% endif %}
         <div class="sub-texto">Você tem 2 itens prontos para economizar</div>
+                <!-- Botão de Limpar Cesta Dinâmico -->
+        {% if produtos %}
+        <div style="margin-bottom: 20px; text-align: right;">
+            <a href="/limpar-cesta/" style="color: #FF1744; font-size: 12px; font-weight: 700; text-decoration: none; background-color: #FFEBEE; padding: 6px 12px; border-radius: 12px;">🗑️ Limpar Cesta</a>
+        </div>
+        {% endif %}
         {% for p in produtos %}
         <div class="item-carrinho">
             <div class="foto-falsa">📦</div>

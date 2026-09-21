@@ -262,3 +262,23 @@ def tela_scanner_camera(request):
     Função visual que renderiza a interface do scanner de câmera do Cestia
     """
     return render(request, "cestia/scanner.html")
+
+
+def api_limpar_cesta(request):
+    """
+    Função que simula o esvaziamento da cesta de compras do cliente
+    e o redireciona de volta com uma mensagem de confirmação.
+    """
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    
+    # Injeta um balão de aviso cinza informando que a cesta foi limpa
+    messages.info(request, '🧹 Sua cesta de compras foi esvaziada.')
+    
+    # Para o MVP visual, redirecionamos para a mesma página, mas passando uma lista vazia
+    return redirect('cesta_vazia')
+def tela_cesta_vazia(request):
+    """
+    Renderiza a tela do carrinho sem nenhum produto cadastrado
+    """
+    return render(request, "cestia/cesta.html", {'produtos': []})
