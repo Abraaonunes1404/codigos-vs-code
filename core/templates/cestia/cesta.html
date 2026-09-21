@@ -25,6 +25,14 @@
 <body>
     <div class="celular-container">
         <div class="titulo-pagina">🛒 Sua Cesta</div>
+                <!-- Bloco de Mensagens de Sucesso Dinâmicas -->
+        {% if messages %}
+            {% for message in messages %}
+                <div style="background-color: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; padding: 12px; border-radius: 15px; margin-bottom: 20px; font-size: 13px; font-weight: 600;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
         <div class="sub-texto">Você tem 2 itens prontos para economizar</div>
         {% for p in produtos %}
         <div class="item-carrinho">
