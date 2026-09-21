@@ -290,6 +290,20 @@ def api_verificar_alertas_preco(request):
     Motor inteligente (Robô) que simula a varredura de preços nas filiais
     e dispara gatilhos de aviso quando encontra valores abaixo do esperado.
     """
+    # Garante a criação de um alerta fixo para testes na nuvem se a tabela estiver vazia
+    if not AlertaPreco.objects.filter(ativo=True).exists():
+        try:
+            produto_teste = Produto.objects.filter(nome__icontains="Arroz").first()
+            if produto_teste:
+                AlertaPreco.objects.create(
+                    produto=produto_teste,
+                    preco_alvo=50.00,
+                    email_notificacao="abraao@exemplo.com",
+                    ativo=True
+                )
+        except Exception:
+            pass
+
     alertas_disparados = []
     alertas_ativos = AlertaPreco.objects.filter(ativo=True)
     filiais = Filial.objects.all()
