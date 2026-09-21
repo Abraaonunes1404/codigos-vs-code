@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,7 @@
         .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; padding-bottom: 40px; }
         .titulo-pagina { font-size: 22px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         
-        /* ABAS DE NAVEGA√á√ÉO */
+        /* ABAS DE NAVEGA«√O */
         .abas-container { display: flex; background-color: #F1F3F5; border-radius: 15px; padding: 4px; margin-bottom: 20px; }
         .aba { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; color: #495057; border-radius: 12px; }
         .aba.ativa { background-color: #FF6D00; color: #FFF; }
@@ -35,26 +35,26 @@
 <body>
 
     <div class="celular-container">
-        <div class="titulo-pagina">üìä Melhor Op√ß√£o</div>
+        <div class="titulo-pagina">?? Melhor OpÁ„o</div>
         
         <!-- Banner de Destaque da Economia Real (Marketing) -->
         <div style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9); border: 1px solid #81C784; padding: 15px; border-radius: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 10px rgba(46,125,50,0.06);">
-            <span style="font-size: 24px;">üéâ</span>
+            <span style="font-size: 24px;">??</span>
             <h3 style="color: #1B5E20; font-size: 14px; font-weight: 700; margin-top: 5px;">Sua Economia Potencial</h3>
             <p style="font-size: 24px; color: #2E7D32; font-weight: 800; margin: 4px 0;">R$ {{ dados.economia_consolidada|floatformat:2 }}</p>
-            <p style="font-size: 11px; color: #388E3C; font-weight: 600;">economizados em rela√ß√£o √† filial mais cara do Tarum√£!</p>
+            <p style="font-size: 11px; color: #388E3C; font-weight: 600;">economizados em relaÁ„o ‡ filial mais cara do Tarum„!</p>
         </div>
 
-        <!-- Abas de Navega√ß√£o -->
+        <!-- Abas de NavegaÁ„o -->
         <div class="abas-container">
             <div class="aba ativa">Comprar Tudo Junto</div>
             <a href="/rota-cestia/" class="aba" style="text-decoration: none; color: #495057;">Fazer Rota (Mapa)</a>
         </div>
 
-                        <!-- Bot√£o Moderno de Compartilhar Economia no WhatsApp (Vers√£o Universal) -->
+                        <!-- Bot„o Moderno de Compartilhar Economia no WhatsApp (Vers„o Universal) -->
         <div style="margin: -5px 15px 20px 15px;">
             <a href="#" id="btn-whatsapp" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #25D366; color: #FFF; text-decoration: none; padding: 12px; border-radius: 15px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 10px rgba(37,211,102,0.2);">
-                <span>üí¨</span> Compartilhar Economia no WhatsApp
+                <span>??</span> Compartilhar Economia no WhatsApp
             </a>
         </div>
 
@@ -62,7 +62,7 @@
             // Script atualizado com o redirecionador universal wa.me
             document.addEventListener("DOMContentLoaded", function() {
                 var economia = "{{ dados.economia_consolidada|floatformat:2 }}";
-                var texto = "Olha s√≥ que top! üéØ Acabei de economizar R$ " + economia + " na minha lista de compras usando o *Cestia*! O app comparou os pre√ßos nos mercados do Tarum√£ e me deu a rota mais barata. Faz o teste voc√™ tamb√©m no link: https://cestia.com.br";
+                var texto = "Olha sÛ que top! ?? Acabei de economizar R$ " + economia + " na minha lista de compras usando o *Cestia*! O app comparou os preÁos nos mercados do Tarum„ e me deu a rota mais barata. Faz o teste vocÍ tambÈm no link: https://cestia.com.br";
                 
                 var linkLink = "https://wa.me" + encodeURIComponent(texto);
                 document.getElementById("btn-whatsapp").setAttribute("href", linkLink);
@@ -80,23 +80,23 @@
             <div class="preco-total">R$ {{ m.custo_beneficio_total|floatformat:2 }}</div>
             <div class="detalhe-custo">Produtos: R$ {{ m.total_produtos|floatformat:2 }} + Deslocamento</div>
             
-            <div class="distancia-tag">üìç {{ m.distancia_km }} km de dist√¢ncia</div>
+            <div class="distancia-tag">?? {{ m.distancia_km }} km de dist‚ncia</div>
             
             <!-- Etiqueta de Economia Detalhada por Loja Individual -->
             {% if m.economia_reais > 0 %}
             <br>
             <div style="color: #2E7D32; font-size: 11px; font-weight: 700; margin-top: 8px; background-color: #E8F5E9; display: inline-block; padding: 4px 10px; border-radius: 10px; border: 1px solid #A5D6A7;">
-                üí∞ Economiza R$ {{ m.economia_reais|floatformat:2 }}
+                ?? Economiza R$ {{ m.economia_reais|floatformat:2 }}
             </div>
             {% endif %}
         </div>
         {% endfor %}
 
-        <!-- Bloco de An√°lise do Split Bimercado -->
+        <!-- Bloco de An·lise do Split Bimercado -->
         <div class="bloco-split">
-            <div class="titulo-split">üí° An√°lise de Compra Dividida</div>
+            <div class="titulo-split">?? An·lise de Compra Dividida</div>
             <div class="texto-split">
-                Para esta lista, <strong>n√£o vale a pena</strong> visitar dois supermercados. Dividindo os produtos, o custo extra do deslocamento casado ({{ dados.sugestao_otimizada_split_2_mercados.distancia_total_estimada_km }} km) anularia a economia dos itens.
+                Para esta lista, <strong>n„o vale a pena</strong> visitar dois supermercados. Dividindo os produtos, o custo extra do deslocamento casado ({{ dados.sugestao_otimizada_split_2_mercados.distancia_total_estimada_km }} km) anularia a economia dos itens.
             </div>
             <div class="valores-split">
                 Total se dividido: R$ {{ dados.sugestao_otimizada_split_2_mercados.custo_beneficio_total|floatformat:2 }}
