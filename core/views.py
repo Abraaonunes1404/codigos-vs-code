@@ -230,8 +230,17 @@ def tela_ranking_resultados(request):
     }
     return render(request, "cestia/ranking.html", {'dados': dados_mock})
 
-
-
+def tela_mapa_rota(request):
+    """
+    Função visual que simula o mapa de rota saindo do Tarumã até o mercado vencedor
+    """
+    dados_rota = {
+        'origem': 'Tarumã, Manaus',
+        'destino': 'Grupo DB - DB Ponta Negra',
+        'distancia_km': 7.79,
+        'tempo_estimado_min': 14,
+    }
+    return render(request, "cestia/mapa.html", {'rota': dados_rota})
 
 def api_scannear_codigo_barra(request):
     """
