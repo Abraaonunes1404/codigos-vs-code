@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escanear Produto - Cestia</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #F8F9FA; display: flex; justify-content: center; }
+        .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #111; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; color: #FFF; display: flex; flex-direction: column; justify-content: space-between; }
+        .topo-scanner { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .btn-voltar { background: none; border: none; color: #FFF; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; }
+        .titulo-topo { font-size: 16px; font-weight: 700; color: #FF6D00; }
+        .area-camera { flex: 1; display: flex; justify-content: center; align-items: center; margin: 40px 0; position: relative; }
+        .mira-quadrada { width: 260px; height: 180px; border: 3px solid #00E5FF; border-radius: 20px; position: relative; box-shadow: 0 0 0 1000px rgba(0,0,0,0.6); overflow: hidden; }
+        .linha-laser { position: absolute; width: 100%; height: 4px; background-color: #FF1744; box-shadow: 0 0 12px #FF1744; top: 0; animation: scanear 2s infinite ease-in-out; }
+        @keyframes scanear {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+        .texto-instrucao { text-align: center; font-size: 14px; color: #CCC; line-height: 20px; padding: 0 30px; }
+        .rodape-botoes { margin-bottom: 20px; }
+        .btn-simular { width: 100%; background-color: #FF6D00; color: #FFF; border: none; padding: 15px; border-radius: 25px; font-size: 14px; font-weight: bold; text-align: center; cursor: pointer; text-decoration: none; display: block; box-shadow: 0 4px 12px rgba(255,109,0,0.3); }
+    </style>
+</head>
+<body>
+    <div class="celular-container">
+        <div class="topo-scanner">
+            <a href="/" class="btn-voltar">✕ Fechar</a>
+            <div class="titulo-topo">LEITOR EAN</div>
+            <div style="width: 50px;"></div>
+        </div>
+        <div class="area-camera">
+            <div class="mira-quadrada">
+                <div class="linha-laser"></div>
+            </div>
+        </div>
+        <div class="rodape-botoes">
+            <p class="texto-instrucao" style="margin-bottom: 25px;">
+                Posicione o código de barras do produto dentro do quadrado azul para realizar a leitura automática.
+            </p>
+            <a href="/api/scan/?ean=7891234567890" class="btn-simular">⚡ SIMULAR LEITURA (ARROZ TIO JOÃO)</a>
+        </div>
+    </div>
+</body>
+</html>

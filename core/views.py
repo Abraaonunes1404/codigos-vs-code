@@ -258,3 +258,10 @@ def api_scannear_codigo_barra(request):
             'erro': 'Produto não cadastrado',
             'mensagem': 'Este código de barras ainda não existe na nossa base central.'
         }, status=404, json_dumps_params={'ensure_ascii': False})
+
+
+def tela_scanner_camera(request):
+    """
+    Função visual que renderiza a interface do scanner de câmera do Cestia
+    """
+    return render(request, "cestia/scanner.html")
