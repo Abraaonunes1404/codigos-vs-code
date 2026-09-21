@@ -215,7 +215,7 @@ def tela_ranking_resultados(request):
     loja_mais_cara = lojas_ranking[1]['custo_beneficio_total']
     loja_mais_barata = lojas_ranking[0]['custo_beneficio_total']
     
-    economia_maxima = round(loja_mais_cara - loamais_barata, 2)
+    economia_maxima = round(loja_mais_cara - loja_mais_barata, 2)
     
     dados_mock = {
         'quantidade_itens_solicitados': 2,
