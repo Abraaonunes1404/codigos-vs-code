@@ -195,40 +195,77 @@ def api_comparar_lista_compras(request):
 
 def tela_ranking_resultados(request):
     """
-    Função visual adaptada que injeta a matemática de Economia Real (R$) 
-    no topo e na listagem do ranking de forma corrigida.
+    Função visual automatizada que lê os produtos reais cadastrados no banco,
+    calcula o valor total por filial e exibe a economia real (R$) dinâmica no topo.
     """
-    lojas_ranking = [
-        {
-            'supermercado': 'Grupo DB', 'loja': 'DB Ponta Negra',
-            'total_produtos': 36.40, 'distancia_km': 7.79, 'custo_beneficio_total': 45.75,
-            'vencedor': True, 'medalha': '🥇 1º Lugar', 'economia_reais': 14.20
-        },
-        {
-            'supermercado': 'Grupo DB', 'loja': 'DB Paraíba',
-            'total_produtos': 48.60, 'distancia_km': 10.54, 'custo_beneficio_total': 59.95,
-            'vencedor': False, 'medalha': '🥈 2º Lugar', 'economia_reais': 0.0
-        }
-    ]
+    lat_usuario = float(request.GET.get('lat', -3.0245))
+    lon_usuario = float(request.GET.get('lon', -60.0512))
+
+    # CAPTURA REAL: Puxa todos os produtos cadastrados no banco de dados para a cesta
+    produtos_reais = Produto.objects.all()
+    filiais = list(Filial.objects.all())
     
-    # CORREÇÃO CIRÚRGICA: Pega as posições exatas da lista
-    loja_mais_cara = lojas_ranking[1]['custo_beneficio_total']
-    loja_mais_barata = lojas_ranking[0]['custo_beneficio_total']
+    opcoes_monomercado = []
     
-    economia_maxima = round(loja_mais_cara - loja_mais_barata, 2)
-    
-    dados_mock = {
-        'quantidade_itens_solicitados': 2,
-        'comprar_tudo_no_mesmo_lugar': lojas_ranking,
+    # Passo 1: Varre cada filial calculando a soma real dos produtos do banco
+    for index, filial in enumerate(filiais):
+        valor_total_sacola = 0
+        itens_encontrados = 0
+        
+        # Calcula a distância real do Tarumã até a filial
+        distancia = calcular_distancia(lat_usuario, lon_usuario, filial.latitude, filial.longitude)
+
+        for produto in produtos_reais:
+            try:
+                registro_preco = HistoricoPreco.objects.get(produto=produto, filial=filial)
+                valor_total_sacola += registro_preco.preco
+                itens_encontrados += 1
+            except HistoricoPreco.DoesNotExist:
+                continue
+
+        # Se a filial tiver preços para os produtos, adiciona ao ranking
+        if itens_encontrados > 0:
+            custo_deslocamento = distancia * 1.20
+            custo_final_real = float(valor_total_sacola) + custo_deslocamento
+            
+            # Define medalhas com base na posição simulada de índice
+            medalha = '🥇 1º Lugar' if index == 0 else f'🥈 {index + 1}º Lugar'
+
+            opcoes_monomercado.append({
+                'supermercado': filial.supermercado.nome,
+                'loja': filial.nome_loja,
+                'total_produtos': float(valor_total_sacola),
+                'distancia_km': round(distancia, 2),
+                'custo_beneficio_total': round(custo_final_real, 2),
+                'vencedor': True if index == 0 else False,
+                'medalha': medalha,
+                'economia_reais': 0.0
+            })
+
+    # Ordena do mais barato para o mais caro pelo custo-benefício
+    ranking_ordenado = sorted(opcoes_monomercado, key=lambda x: x['custo_beneficio_total'])
+
+    # Passo 2: Calcula a economia real comparando o melhor com o pior cenário
+    economia_maxima = 0.0
+    if len(ranking_ordenado) > 1:
+        maior_custo = ranking_ordenado[-1]['custo_beneficio_total']
+        for item in ranking_ordenado:
+            item['economia_reais'] = round(maior_custo - item['custo_beneficio_total'], 2)
+        economia_maxima = ranking_ordenado[0]['economia_reais']
+
+    # Dados processados dinamicamente enviados para o HTML renderizar
+    dados_dinamicos = {
+        'quantidade_itens_solicitados': produtos_reais.count(),
+        'comprar_tudo_no_mesmo_lugar': ranking_ordenado,
         'sugestao_otimizada_split_2_mercados': {
             'lojas_envolvidas': 'DB Ponta Negra + DB Paraíba',
-            'total_apenas_produtos': 34.10,
             'distancia_total_estimada_km': 12.20,
             'custo_beneficio_total': 48.74
         },
         'economia_consolidada': economia_maxima
     }
-    return render(request, "cestia/ranking.html", {'dados': dados_mock})
+    return render(request, "cestia/ranking.html", {'dados': dados_dinamicos})
+
 
 def tela_mapa_rota(request):
     """
