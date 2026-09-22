@@ -448,3 +448,10 @@ def api_limpar_cesta(request):
         pass
         
     return redirect('cesta_vazia')
+
+
+def tela_cesta_vazia(request):
+    """
+    Renderiza a interface visual de aviso informando que a cesta esta vazia.
+    """
+    return render(request, "cestia/cesta_vazia.html")
