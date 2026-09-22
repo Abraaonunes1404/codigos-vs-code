@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import reverse_lazy  # Insira esta linha aqui
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,4 +138,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Define que a página de login oficial e segura do Cestia é o painel Admin
 # Define a rota nomeada nativa do painel de administração para o redirecionamento seguro
-LOGIN_URL = 'admin:login'
+# Resolve a rota do painel admin com segurança após todo o carregamento do mapa de URLs
+LOGIN_URL = reverse_lazy('admin:login')
