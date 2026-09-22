@@ -346,3 +346,29 @@ def api_comparar_produto(request):
 
 def api_comparar_lista_compras(request):
     return JsonResponse({'status': 'desativado_temporariamente'})
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+
+def login_lojista(request):
+    error = None
+    if request.method == 'POST':
+        usuario_v = request.POST.get('username')
+        senha_v = request.POST.get('password')
+        
+        user = authenticate(request, username=usuario_v, password=senha_v)
+        if user is not None:
+            login(request, user)
+            # Redireciona de volta para a página que o lojista tentava acessar originalmente
+            return redirect(request.GET.get('next', 'atualizar_preco_lojista'))
+        else:
+            error = "Usuário ou senha incorretos."
+            
+    return render(request, 'login.html', {'error': error})
+
+# Garanta que a sua view original continue protegida
+@login_required
+def atualizar_preco_lojista(request):
+    return render(request, 'cadastro_preco.html')
