@@ -16,8 +16,10 @@
         /* AREA VISOR DA CAMERA REAL */
         .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 25px 0; border: 3px solid #FF6D00; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
         
-        /* Tag de video que vai receber o sinal da lente do celular */
-        #video-stream { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+        /* O container onde o Quagga injetará o vídeo ao vivo */
+        #interactive.viewport { width: 100%; height: 100%; position: absolute; }
+        #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
+        canvas.drawingBuffer { display: none; } /* Esconde marcações internas de debug */
         
         .linha-scanner { width: 85%; height: 2px; background-color: #00E5FF; position: absolute; z-index: 10; animation: escaneando 2.5s infinite linear; box-shadow: 0 0 10px #00E5FF; }
         
@@ -29,74 +31,81 @@
 
         /* BOTOES DE CONTROLE */
         .controle-container { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px; z-index: 10; }
-        .btn-foto-produto { width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); }
-        .btn-simular-barra { width: 100%; height: 46px; background-color: #263238; color: #ECEFF1; border: 1px solid #37474F; border-radius: 23px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-foto-produto { width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); text-align: center; line-height: 52px; }
         .btn-voltar { text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px; }
     </style>
+    <!-- IMPORTAÇÃO DA BIBLIOTECA DE SCANNER AUTOMÁTICO (QUAGGA JS) -->
+    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
     <div class="celular-container">
         <div class="topo-scanner">
             <div class="titulo-scanner">🤖 Scanner IA Cestia</div>
-            <div class="sub-scanner">Aponte para o codigo de barras ou para o preco na prateleira</div>
+            <div class="sub-scanner">Mire o codigo de barras para ler automatico ou tire foto do preço</div>
         </div>
 
-               <div class="visor-camera">
+        <!-- Visor de vídeo integrado com detecção de barras automática -->
+        <div class="visor-camera">
             <div class="linha-scanner"></div>
-            <!-- Elemento nativo de captura de vídeo -->
-            <video id="video-stream" autoplay playsinline muted></video>
+            <div id="interactive" class="viewport"></div>
         </div>
 
         <div class="controle-container">
-            <!-- SEU BOTÃO SOLICITADO: Força o celular a abrir APENAS a câmera ao vivo, bloqueando a galeria de fotos -->
-            <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
-                📸 Foto do Produto
+            <!-- SUA REGRA DE SEGURANÇA: Abre apenas a câmera nativa para registrar a etiqueta de preço -->
+            <label for="camera-captura" class="btn-foto-produto">
+                📸 Foto do Produto e Preço
             </label>
             <form id="form-ia-visao" action="/api/scan/" method="POST" enctype="multipart/form-data" style="display: none;">
                 {% csrf_token %}
                 <input type="file" id="camera-captura" name="imagem_gondola" accept="image/*" capture="environment" onchange="document.getElementById('form-ia-visao').submit();">
             </form>
-
-            <!-- Botao secundario para ler o codigo de barras tradicional -->
-            <button class="btn-simular-barra" onclick="location.href='/api/scan/?ean=7891000100101'">
-                ║▌║ Leitor de Barras Rápido
-            </button>
             
             <a href="/cesta/" class="btn-voltar">← Voltar para a Cesta</a>
         </div>
+    </div>
 
-
-    <!-- Script Inteligente que ativa a camera traseira do smartphone -->
+    <!-- SCRIPT DE INTELIGÊNCIA DE DETECÇÃO EM TEMPO REAL -->
     <script>
-        async function iniciarCameraReal() {
-            const video = document.getElementById('video-stream');
-            
-            // Configurações para forçar o uso da câmera traseira com foco automático
-            const restricoes = {
-                video: {
-                    facingMode: { exact: "environment" } // Alvo: Câmera de trás do celular
+        function iniciarScannerAutomatico() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#interactive'), // Joga o vídeo no visor
+                    constraints: {
+                        width: 640,
+                        height: 480,
+                        facingMode: "environment" // Força o uso da câmera traseira
+                    },
                 },
-                audio: false
-            };
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia(restricoes);
-                video.srcObject = stream;
-            } catch (erro) {
-                console.log("Câmera traseira específica não encontrada, tentando câmera padrão...", erro);
-                // Fallback: se estiver no computador ou não achar a traseira exata, abre a câmera disponível (ex: webcam)
-                try {
-                    const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                    video.srcObject = fallbackStream;
-                } catch (erroGrave) {
-                    alert("Aviso: Não foi possível acessar a câmera do aparelho. Verifique as permissões do seu navegador.");
+                decoder: {
+                    readers: ["ean_reader", "ean_8_reader"] // Foco: Códigos de barras de supermercado
                 }
-            }
+            }, function(err) {
+                if (err) {
+                    console.log("Erro ao iniciar o Quagga, tentando alternativa de câmera simples...", err);
+                    return;
+                }
+                console.log("Motor de leitura automática inicializado com sucesso!");
+                Quagga.start(); // Dá o play na câmera e na análise de vídeo
+            });
+
+            // GATILHO DE SUCESSO: Executado automaticamente assim que descobre um código de barras válido
+            Quagga.onDetected(function(resultado) {
+                const codigoEAN = resultado.codeResult.code;
+                if (codigoEAN) {
+                    Quagga.stop(); // Trava a câmera para não ler o mesmo item duas vezes seguidas
+                    
+                    // Emite um bipe visual e envia o código capturado direto para o Python no backend!
+                    alert("║▌║ Código Detectado Automaticamente: " + codigoEAN);
+                    window.location.href = "/api/scan/?ean=" + codigoEAN;
+                }
+            });
         }
 
-        // Inicializa o olho digital assim que a página terminar de carregar
-        window.addEventListener('DOMContentLoaded', iniciarCameraReal);
+        // Inicializa o olho digital assim que a interface carregar na tela
+        window.addEventListener('DOMContentLoaded', iniciarScannerAutomatico);
     </script>
 
 </body>
