@@ -253,36 +253,75 @@ def tela_ranking_resultados(request):
         if custo_beneficio_total > maior_custo_total:
             maior_custo_total = custo_beneficio_total
             
+        rdef tela_ranking_resultados(request):
+    """
+    Calcula o ranking dos supermercados mais baratos multiplicando 
+    o preco real de cada filial no HistoricoPreco pela quantidade da sacola.
+    """
+    from django.shortcuts import render, redirect
+    from .models import ItemCarrinhoDinamico, Filial, HistoricoPreco
+    
+    # 1. Busca os itens salvos no carrinho ativo do usuario
+    itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
+    
+    # Se o carrinho estiver vazio, joga o usuario de volta para a sacola vazia
+    if not itens_carrinho.exists():
+        return redirect('cesta_vazia')
+        
+    # 2. Varre as filiais do banco de dados
+    filiais = Filial.objects.select_related('supermercado').all()
+    ranking_calculado = []
+    
+    maior_custo_total = 0
+    
+    for filial in filiais:
+        total_produtos_filial = 0
+        
+        for item in itens_carrinho:
+            try:
+                # CORREÇÃO: Busca o preço exato deste produto nesta filial específica
+                registro_preco = HistoricoPreco.objects.get(produto=item.produto, filial=filial)
+                preco_real = registro_preco.preco
+            except HistoricoPreco.DoesNotExist:
+                # Fallback: Caso o produto não tenha preço nessa loja, assume zero ou valor base
+                preco_real = getattr(item.produto, 'preco_base', 0)
+            
+            # MÁGICA DA MULTIPLICAÇÃO: Preço Real da Filial x Quantidade da Sacola
+            total_produtos_filial += (float(preco_real) * item.quantidade)
+            
+        custo_beneficio_total = total_produtos_filial
+        
+        if custo_beneficio_total > maior_custo_total:
+            maior_custo_total = custo_beneficio_total
+            
+        # CORREÇÃO DE ATRIBUTOS: Usando filial.supermercado.nome e filial.nome_loja do models.py
         ranking_calculado.append({
-            'supermercado': filial.nome,
-            'loja': filial.bairro,
+            'supermercado': filial.supermercado.nome,
+            'loja': filial.nome_loja,
             'total_produtos': total_produtos_filial,
             'custo_beneficio_total': custo_beneficio_total,
-            'distancia_km': getattr(filial, 'distancia_padrao', 1.5),
+            'distancia_km': 1.5,
             'vencedor': False,
             'economia_reais': 0
         })
         
-    # Ordena o ranking do mais barato para o mais caro
+    # Ordena do mais barato ao mais caro
     ranking_calculado = sorted(ranking_calculado, key=lambda x: x['custo_beneficio_total'])
     
-    # Carimba o primeiro colocado como o Grande Vencedor
+    # Define o primeiro colocado como o vencedor e calcula economias individuais
     if ranking_calculado:
         ranking_calculado[0]['vencedor'] = True
         menor_custo_total = ranking_calculado[0]['custo_beneficio_total']
-        
-        # Calcula a economia consolidada em relação ao mais caro
         economia_consolidada = maior_custo_total - menor_custo_total
         
-        # Insere a economia individual nos cards
         for loja in ranking_calculado:
             loja['economia_reais'] = maior_custo_total - loja['custo_beneficio_total']
     else:
         economia_consolidada = 0
+        menor_custo_total = 0
 
-    # Estrutura os dados finais para enviar ao HTML
     dados_contexto = {
-        'economia_consolidada': economia_consolidada,
+        'economia_consolidada': economy_consolidada if 'economia_consolidada' in locals() else 0,
         'comprar_tudo_no_mesmo_lugar': ranking_calculado,
         'sugestao_otimizada_split_2_mercados': {
             'distancia_total_estimada_km': 4.2,
@@ -291,6 +330,7 @@ def tela_ranking_resultados(request):
     }
     
     return render(request, "cestia/ranking.html", {'dados': dados_contexto})
+
 
 
 
