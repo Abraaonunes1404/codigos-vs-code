@@ -136,13 +136,4 @@ MAILERS = {
 import os
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Define que a página de login oficial e segura do Cestia é o painel Admin
-# Define a rota nomeada nativa do painel de administração para o redirecionamento seguro
-# Resolve a rota do painel admin com segurança após todo o carregamento do mapa de URLs
-# Redireciona com segurança para a raiz do painel Admin, disparando a tela de autenticação nativa
-# Rota estática absoluta para forçar o redirecionamento correto em decorators como @login_required
-LOGIN_URL = '/admin/login/'
-
-
-
-
+LOGIN_URL = reverse_lazy('admin:login')
