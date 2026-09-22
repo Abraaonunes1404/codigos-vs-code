@@ -16,7 +16,7 @@
         /* AREA VISOR DA CAMERA REAL */
         .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 25px 0; border: 3px solid #FF6D00; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
         
-        /* Container de inje��o de v�deo do Quagga */
+        /* Container onde o Quagga injetara o video ao vivo */
         #interactive.viewport { width: 100%; height: 100%; position: absolute; }
         #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
         canvas.drawingBuffer { display: none; }
@@ -34,17 +34,15 @@
         .btn-foto-produto { width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); text-align: center; line-height: 52px; }
         .btn-voltar { text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px; }
     </style>
-    <!-- LINK CORRIGIDO: Importa��o oficial e direta da biblioteca CDNJS do QuaggaJS -->
-       <!-- IMPORTA��O CORRETA E DIRETA DA BIBLIOTECA DO SCANNER AUTOM�TICO -->
+    <!-- LINK CORRIGIDO: Importacao oficial e direta da biblioteca CDNJS do QuaggaJS -->
     <script src="https://cloudflare.com"></script>
-
 </head>
 <body>
 
     <div class="celular-container">
         <div class="topo-scanner">
-            <div class="titulo-scanner">?? Scanner IA Cestia</div>
-            <div class="sub-scanner">Mire o codigo de barras para ler automatico ou tire foto do pre�o</div>
+            <div class="titulo-scanner">🤖 Scanner IA Cestia</div>
+            <div class="sub-scanner">Mire o codigo de barras para ler automatico ou tire foto do preco</div>
         </div>
 
         <div class="visor-camera">
@@ -53,20 +51,20 @@
         </div>
 
         <div class="controle-container">
-            <!-- TRAVA DE SEGURAN�A: Abre exclusivamente a c�mera de g�ndola instant�nea -->
+            <!-- TRAVA DE SEGURANCA: Abre exclusivamente a camera de gondola instantanea -->
             <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
-                ?? Foto do Produto e Pre�o
+                📸 Foto do Produto e Preco
             </label>
             <form id="form-ia-visao" action="/api/scan/" method="POST" enctype="multipart/form-data" style="display: none;">
                 {% csrf_token %}
                 <input type="file" id="camera-captura" name="imagem_gondola" accept="image/*" capture="environment" onchange="document.getElementById('form-ia-visao').submit();">
             </form>
             
-            <a href="/cesta/" class="btn-voltar">? Voltar para a Cesta</a>
+            <a href="/cesta/" class="btn-voltar">← Voltar para a Cesta</a>
         </div>
     </div>
 
-    <!-- MOTOR DE DETEC��O ADAPT�VEL PC / SMARTPHONE -->
+    <!-- SCRIPT DE INTELIGENCIA DE DETECCAO ADAPTAVEL PC / SMARTPHONE -->
     <script>
         function iniciarScannerAutomatico() {
             const configuracaoStream = {
@@ -76,7 +74,7 @@
                 constraints: {
                     width: { min: 640, ideal: 1280 },
                     height: { min: 480, ideal: 720 },
-                    facingMode: "environment" // Prefer�ncia m�xima: c�mera traseira
+                    facingMode: "environment" // Alvo preferencial: camera de tras do celular
                 }
             };
 
@@ -88,9 +86,7 @@
                 locate: true
             }, function(err) {
                 if (err) {
-                    console.log("Detectado ambiente sem c�mera traseira (PC), acionando c�mera padr�o...");
-                    
-                    // Fallback para PC: Altera o modo de busca para aceitar a webcam comum frontal
+                    console.log("PC detectado, tentando acionar webcam comum...");
                     configuracaoStream.constraints.facingMode = "user";
                     
                     Quagga.init({
@@ -98,23 +94,23 @@
                         decoder: { readers: ["ean_reader", "ean_8_reader"] }
                     }, function(retryErr) {
                         if (retryErr) {
-                            console.log("Nenhuma c�mera encontrada no dispositivo.", retryErr);
+                            console.log("Nenhuma camera encontrada neste dispositivo.", retryErr);
                             return;
                         }
                         Quagga.start();
                     });
                     return;
                 }
-                console.log("Motor de leitura autom�tica do Cestia operando!");
+                console.log("Motor de leitura automatica do Cestia operando!");
                 Quagga.start();
             });
 
-            // GATILHO DE SUCESSO DO C�DIGO DE BARRAS AUTOM�TICO
+            // GATILHO DE SUCESSO DO CÓDIGO DE BARRAS AUTOMÁTICO
             Quagga.onDetected(function(resultado) {
                 const codigoEAN = resultado.codeResult.code;
                 if (codigoEAN) {
                     Quagga.stop();
-                    alert("��� C�digo Detectado Automaticamente: " + codigoEAN);
+                    alert("║▌║ Codigo Detectado Automaticamente: " + codigoEAN);
                     window.location.href = "/api/scan/?ean=" + codigoEAN;
                 }
             });
