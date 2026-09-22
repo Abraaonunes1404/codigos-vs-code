@@ -8,13 +8,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #F8F9FA; display: flex; justify-content: center; }
         
-        /* AJUSTE ESSENCIAL: Garante que os elementos filhos absolutos fiquem ancorados aqui */
         .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; padding-bottom: 110px; }
         
         .titulo-pagina { font-size: 22px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 5px; }
         .sub-texto { font-size: 13px; color: #777; margin-bottom: 25px; }
         
-        /* AJUSTE ESSENCIAL: position relative adicionado para a lixeira fixar no canto */
         .item-carrinho { display: flex; align-items: center; background-color: #FFF; border: 1px solid #E0E0E0; padding: 12px; padding-right: 45px; border-radius: 20px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         
         .foto-falsa { width: 50px; height: 50px; background-color: #FFE0B2; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-right: 15px; }
@@ -22,10 +20,11 @@
         .nome-prod { font-size: 14px; font-weight: 700; color: #212121; }
         .marca-prod { font-size: 11px; color: #999; text-transform: uppercase; margin-top: 2px; }
         .qtd-container { display: flex; align-items: center; gap: 10px; background-color: #F1F3F5; padding: 6px 12px; border-radius: 15px; margin-right: 5px; }
-        .btn-qtd { border: none; background: none; font-size: 16px; font-weight: bold; color: #FF6D00; cursor: pointer; }
-        .num-qtd { font-size: 13px; font-weight: bold; }
         
-        /* ESTILO DA LIXEIRA INDIVIDUAL REATIVA */
+        /* Botões de quantidade transformados em links visuais */
+        .btn-qtd-link { text-decoration: none; font-size: 16px; font-weight: bold; color: #FF6D00; cursor: pointer; display: inline-block; padding: 0 4px; }
+        .num-qtd { font-size: 13px; font-weight: bold; color: #333; }
+        
         .btn-deletar-item { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); text-decoration: none; font-size: 14px; background-color: #FFEBEE; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #FF1744; border: 1px solid #FFCDD2; transition: all 0.2s ease; }
         .btn-deletar-item:hover { background-color: #FFCDD2; }
         
@@ -37,7 +36,6 @@
     <div class="celular-container">
         <div class="titulo-pagina">🛒 Sua Cesta</div>
         
-        <!-- Bloco de Mensagens de Sucesso Dinamicas -->
         {% if messages %}
             {% for message in messages %}
                 <div style="background-color: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; padding: 12px; border-radius: 15px; margin-bottom: 20px; font-size: 13px; font-weight: 600;">
@@ -46,37 +44,35 @@
             {% endfor %}
         {% endif %}
         
-        <div class="sub-texto">Voce tem 2 itens prontos para economizar</div>
+        <div class="sub-texto">Gerencie as quantidades da sua lista para economizar</div>
         
-        <!-- Botao de Limpar Cesta Dinamico -->
         {% if produtos %}
         <div style="margin-bottom: 20px; text-align: right;">
             <a href="/limpar-cesta/" style="color: #FF1744; font-size: 12px; font-weight: 700; text-decoration: none; background-color: #FFEBEE; padding: 6px 12px; border-radius: 12px;">🗑️ Limpar Cesta</a>
         </div>
         {% endif %}
         
-        <!-- Renderizacao dos produtos da sacola -->
         {% for p in produtos %}
         <div class="item-carrinho">
             <div class="foto-falsa">📦</div>
             <div class="info-produto">
                 <div class="nome-prod">{{ p.nome }}</div>
-                <div class="marca-prod">{{ p.marca }} ({{ p.quantidade }}{{ p.unidade }})</div>
+                <div class="marca-prod">{{ p.marca }} ({{ p.unidade }})</div>
             </div>
             <div class="qtd-container">
-                <button class="btn-qtd">-</button>
-                <div class="num-qtd">1</div>
-                <button class="btn-qtd">+</button>
+                <!-- Botão de diminuir quantidade conectado ao backend -->
+                <a href="/cesta/alterar/{{ p.id }}/diminuir/" class="btn-qtd-link">-</a>
+                <div class="num-qtd">{{ p.quantidade }}</div>
+                <!-- Botão de aumentar quantidade conectado ao backend -->
+                <a href="/cesta/alterar/{{ p.id }}/aumentar/" class="btn-qtd-link">+</a>
             </div>
             
-            <!-- LINK DA LIXEIRA INDIVIDUAL REATIVA CONECTADO AO ID DO PRODUTO -->
             <a href="/cesta/remover/{{ p.id }}/" class="btn-deletar-item" title="Remover item">
                 ❌
             </a>
         </div>
         {% endfor %}
         
-        <!-- Card de Ativacao do Robo de Alertas Cestia -->
         <div style="background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border: 1px solid #FFB74D; padding: 20px; border-radius: 20px; margin-top: 30px; box-shadow: 0 4px 12px rgba(255,109,0,0.05);">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                 <span style="font-size: 20px;">🤖</span>
@@ -99,4 +95,3 @@
     </div>
 </body>
 </html>
-

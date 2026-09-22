@@ -500,3 +500,32 @@ def api_remover_produto_cesta(request, produto_id):
         
     # Redireciona o usuário de volta para a tela de cesta atualizada
     return redirect('cesta')
+
+
+def api_alterar_quantidade_cesta(request, produto_id, acao):
+    """
+    Controla as quantidades do carrinho de compras em tempo real,
+    incrementando ou decrementando e atualizando a sacola ativa.
+    """
+    from django.shortcuts import redirect
+    from .models import ItemCarrinhoDinamico, Produto
+    
+    try:
+        produto = Produto.objects.get(id=produto_id)
+        item_carrinho = ItemCarrinhoDinamico.objects.get(produto=produto)
+        
+        if acao == "aumentar":
+            item_carrinho.quantidade += 1
+            item_carrinho.save()
+        elif acao == "diminuir":
+            if item_carrinho.quantidade > 1:
+                item_carrinho.quantidade -= 1
+                item_carrinho.save()
+            else:
+                # Se for menor que 1, deleta o produto da sacola automaticamente
+                item_carrinho.delete()
+                
+    except (Produto.DoesNotExist, ItemCarrinhoDinamico.DoesNotExist):
+        pass
+        
+    return redirect('cesta')
