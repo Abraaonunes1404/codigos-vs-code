@@ -6,10 +6,12 @@ from core.views import (
     tela_mapa_rota, api_scannear_codigo_barra, tela_scanner_camera,
     api_limpar_cesta, tela_cesta_vazia, api_verificar_alertas_preco,
     tela_atualizar_preco_lojista, api_salvar_preco_rapido,
-    api_remover_produto_cesta, api_alterar_quantidade_cesta
+    api_remover_produto_cesta, api_alterar_quantidade_cesta,
+    api_sugestoes_pesquisa
 )
 
 urlpatterns = [
+    path('api/sugestoes/', api_sugestoes_pesquisa, name='api_sugestoes'),
     path('', tela_home_cestia, name='home'),
     path('cesta/', tela_cesta_compras, name='cesta'),
     path('cesta-vazia/', tela_cesta_vazia, name='cesta_vazia'),
@@ -33,3 +35,4 @@ urlpatterns = [
     path('gerente-precos/', tela_atualizar_preco_lojista, name='atualizar_preco_lojista'),
     path('gerente-precos/salvar/', api_salvar_preco_rapido, name='api_salvar_preco'),
 ]
+

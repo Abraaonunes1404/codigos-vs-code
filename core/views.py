@@ -556,3 +556,31 @@ def api_alterar_quantidade_cesta(request, produto_id, acao):
         pass
         
     return redirect('cesta')
+
+
+def api_sugestoes_pesquisa(request):
+    """
+    Motor preditivo que devolve uma lista JSON flutuante com as marcas 
+    disponiveis no banco assim que o usuario digita na home.
+    """
+    from django.http import JsonResponse
+    from .models import Produto
+    from django.db import models
+    
+    termo_digitado = request.GET.get('q', '').strip().lower()
+    resultados = []
+    
+    if len(termo_digitado) >= 2: # Só começa a caçar a partir de 2 letras digitadas
+        # Busca no banco produtos que batem com o nome ou com a marca
+        produtos_filtrados = Produto.objects.filter(
+            models.Q(nome__icontains=termo_digitado) | 
+            models.Q(marca__icontains=termo_digitado)
+        )[:5] # Limita a 5 sugestões para ficar leve e rápido na tela do celular
+        
+        for prod in produtos_filtrados:
+            resultados.append({
+                'id': prod.id,
+                'nome_completo': f"{prod.nome} - {prod.marca}"
+            })
+            
+    return JsonResponse({'sugestoes': resultados})

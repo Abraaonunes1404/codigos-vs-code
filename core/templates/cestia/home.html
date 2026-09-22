@@ -10,21 +10,27 @@
         .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding-bottom: 40px; }
         .topo { background-color: #FF6D00; padding: 40px 20px 30px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
         
-        /* Ajuste do alinhamento do título com a cesta de compras */
         .cabecalho-linha { display: flex; justify-content: space-between; align-items: center; }
         .titulo-app { font-size: 28px; font-weight: bold; color: #FFF; letter-spacing: 0.5px; }
-        
-        /* ESTILO DO SEU BOTÃO SOLICITADO: Atalho de sacola premium flutuante */
-        .btn-sacola-home { text-decoration: none; background-color: rgba(255, 255, 255, 0.2); width: 42px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: background 0.2s; }
-        .btn-sacola-home:active { background-color: rgba(255, 255, 255, 0.3); }
+        .btn-sacola-home { text-decoration: none; background-color: rgba(255, 255, 255, 0.2); width: 42px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
         .boas-vindas { font-size: 15px; color: #FFE0B2; margin-top: 4px; }
         .localizacao-box { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; background-color: rgba(255, 255, 255, 0.15); padding: 8px 15px; border-radius: 20px; }
         .texto-gps { color: #FFF; font-size: 13px; font-weight: 600; }
         .btn-bairro { background-color: #FFF; color: #FF6D00; border: none; padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .busca-container { display: flex; margin: -20px 20px 0 20px; background-color: #FFF; border-radius: 25px; padding-left: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); align-items: center; border: 1px solid #FFE0B2; overflow: hidden; }
+        
+        /* POSICIONAMENTO DA BARRA E DA CAIXA FLUTUANTE */
+        .busca-pos-wrapper { position: relative; margin: -20px 20px 0 20px; z-index: 100; }
+        .busca-container { display: flex; background-color: #FFF; border-radius: 25px; padding-left: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); align-items: center; border: 1px solid #FFE0B2; overflow: hidden; width: 100%; }
         .campo-busca { flex: 1; height: 48px; border: none; outline: none; font-size: 14px; color: #333; }
         .btn-camera { background-color: #00E5FF; border: none; height: 48px; width: 55px; font-size: 18px; cursor: pointer; display: flex; justify-content: center; align-items: center; text-decoration: none; }
+        
+        /* CSS DA CAIXA FLUTUANTE DE MARCAS DISPONÍVEIS */
+        .caixa-sugestoes-flutuante { position: absolute; top: 52px; left: 0; right: 0; background-color: #FFF; border-radius: 16px; border: 1px solid #E0E0E0; box-shadow: 0 8px 25px rgba(0,0,0,0.12); display: none; overflow: hidden; }
+        .opcao-sugestao { padding: 14px 18px; font-size: 14px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #F5F5F5; font-weight: 600; }
+        .opcao-sugestao:last-child { border-bottom: none; }
+        .opcao-sugestao:hover { background-color: #FFF3E0; color: #FF6D00; }
+
         .conteudo { padding: 25px 20px; }
         .titulo-sessao { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #333; }
         .grade-categorias { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 10px; }
@@ -42,7 +48,6 @@
         <div class="topo">
             <div class="cabecalho-linha">
                 <div class="titulo-app">Cestia</div>
-                <!-- SEU NOVO BOTÃO SOLICITADO: Direciona direto para a sacola de compras ativa -->
                 <a href="/cesta/" class="btn-sacola-home" title="Ver minha cesta">🛒</a>
             </div>
             <div class="boas-vindas">Olá! Qual item vai para a sua cesta hoje?</div>
@@ -52,10 +57,15 @@
             </div>
         </div>
 
-        <!-- Barra de Busca com Link Corrigido para o Scanner -->
-        <div class="busca-container">
-            <input type="text" class="campo-busca" placeholder="Busque por produto, marca ou código...">
-            <a href="/scanner-cestia/" class="btn-camera">📷</a>
+        <!-- ENVELOPE DE BUSCA DA LISTA SUSPENSA -->
+        <div class="busca-pos-wrapper">
+            <div class="busca-container">
+                <input type="text" id="campo-pesquisa-viva" class="campo-busca" placeholder="Digite arroz, feijao, etc..." autocomplete="off">
+                <a href="/scanner-cestia/" class="btn-camera">📷</a>
+            </div>
+            
+            <!-- CAIXA FLUTUANTE DA INTELIGÊNCIA PREDITIVA -->
+            <div id="caixa-marcas-suspensa" class="caixa-sugestoes-flutuante"></div>
         </div>
 
         <!-- Conteúdo -->
@@ -88,5 +98,54 @@
         </div>
     </div>
 
+    <!-- SCRIPT REATIVO DE MARCAS FLUTUANTES -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const inputBusca = document.getElementById('campo-pesquisa-viva');
+            const caixaSuspensa = document.getElementById('caixa-marcas-suspensa');
+            
+            // Monitora o usuario digitando letra por letra
+            inputBusca.addEventListener('input', function() {
+                const texto = inputBusca.value.trim();
+                
+                if (texto.length < 2) {
+                    caixaSuspensa.style.display = 'none';
+                    return;
+                }
+                
+                // Dispara o fetch para buscar as marcas em tempo real no Python sem dar refresh
+                fetch(`/api/sugestoes/?q=${texto}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        caixaSuspensa.innerHTML = '';
+                        
+                        if (data.sugestoes.length > 0) {
+                            data.sugestoes.forEach(item => {
+                                const divOpcao = document.createElement('div');
+                                divOpcao.className = 'opcao-sugestao';
+                                divOpcao.innerHTML = `🔍 <span>${item.nome_completo}</span>`;
+                                
+                                // Quando clica na marca flutuante selecionada, adiciona direto na cesta
+                                divOpcao.addEventListener('click', function() {
+                                    window.location.href = `/api/scan/?busca_texto=${encodeURIComponent(item.nome_completo)}`;
+                                });
+                                
+                                caixaSuspensa.appendChild(divOpcao);
+                            });
+                            caixaSuspensa.style.display = 'block';
+                        } else {
+                            caixaSuspensa.style.display = 'none';
+                        }
+                    });
+            });
+            
+            // Fecha a caixa flutuante se clicar fora dela
+            document.addEventListener('click', function(e) {
+                if (!inputBusca.contains(e.target) && !caixaSuspensa.contains(e.target)) {
+                    caixaSuspensa.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
