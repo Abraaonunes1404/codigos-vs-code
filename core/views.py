@@ -467,12 +467,17 @@ def api_remover_produto_cesta(request, produto_id):
     from .models import Produto
     
     try:
-        # Busca o produto que o usuário quer remover
+        # 1. Busca o produto que o usuário quer remover
         produto = Produto.objects.get(id=produto_id)
+        
+        # 2. BUSCA E APAGA o item correspondente na tabela do carrinho dinâmico
+        ItemCarrinhoDinamico.objects.filter(produto=produto).delete()
+        
         # Envia um balão de aviso informando a remoção com sucesso
         messages.success(request, f'🗑️ {produto.nome} foi removido e o total foi recalculado!')
     except Produto.DoesNotExist:
         messages.error(request, '❌ Produto não encontrado na cesta.')
+
         
     # Redireciona o usuário de volta para a tela de cesta atualizada
     return redirect('cesta')
