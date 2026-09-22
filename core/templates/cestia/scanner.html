@@ -16,10 +16,10 @@
         /* AREA VISOR DA CAMERA REAL */
         .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 25px 0; border: 3px solid #FF6D00; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
         
-        /* O container onde o Quagga injetará o vídeo ao vivo */
+        /* Container de injeção de vídeo do Quagga */
         #interactive.viewport { width: 100%; height: 100%; position: absolute; }
         #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
-        canvas.drawingBuffer { display: none; } /* Esconde marcações internas de debug */
+        canvas.drawingBuffer { display: none; }
         
         .linha-scanner { width: 85%; height: 2px; background-color: #00E5FF; position: absolute; z-index: 10; animation: escaneando 2.5s infinite linear; box-shadow: 0 0 10px #00E5FF; }
         
@@ -34,7 +34,7 @@
         .btn-foto-produto { width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); text-align: center; line-height: 52px; }
         .btn-voltar { text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px; }
     </style>
-    <!-- IMPORTAÇÃO DA BIBLIOTECA DE SCANNER AUTOMÁTICO (QUAGGA JS) -->
+    <!-- LINK CORRIGIDO: Importação oficial e direta da biblioteca CDNJS do QuaggaJS -->
     <script src="https://cloudflare.com"></script>
 </head>
 <body>
@@ -45,15 +45,14 @@
             <div class="sub-scanner">Mire o codigo de barras para ler automatico ou tire foto do preço</div>
         </div>
 
-        <!-- Visor de vídeo integrado com detecção de barras automática -->
         <div class="visor-camera">
             <div class="linha-scanner"></div>
             <div id="interactive" class="viewport"></div>
         </div>
 
         <div class="controle-container">
-            <!-- SUA REGRA DE SEGURANÇA: Abre apenas a câmera nativa para registrar a etiqueta de preço -->
-            <label for="camera-captura" class="btn-foto-produto">
+            <!-- TRAVA DE SEGURANÇA: Abre exclusivamente a câmera de gôndola instantânea -->
+            <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
                 📸 Foto do Produto e Preço
             </label>
             <form id="form-ia-visao" action="/api/scan/" method="POST" enctype="multipart/form-data" style="display: none;">
@@ -65,46 +64,60 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE INTELIGÊNCIA DE DETECÇÃO EM TEMPO REAL -->
+    <!-- MOTOR DE DETECÇÃO ADAPTÁVEL PC / SMARTPHONE -->
     <script>
         function iniciarScannerAutomatico() {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector('#interactive'), // Joga o vídeo no visor
-                    constraints: {
-                        width: 640,
-                        height: 480,
-                        facingMode: "environment" // Força o uso da câmera traseira
-                    },
-                },
-                decoder: {
-                    readers: ["ean_reader", "ean_8_reader"] // Foco: Códigos de barras de supermercado
+            const configuracaoStream = {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#interactive'),
+                constraints: {
+                    width: { min: 640, ideal: 1280 },
+                    height: { min: 480, ideal: 720 },
+                    facingMode: "environment" // Preferência máxima: câmera traseira
                 }
+            };
+
+            Quagga.init({
+                inputStream: configuracaoStream,
+                decoder: {
+                    readers: ["ean_reader", "ean_8_reader"]
+                },
+                locate: true
             }, function(err) {
                 if (err) {
-                    console.log("Erro ao iniciar o Quagga, tentando alternativa de câmera simples...", err);
+                    console.log("Detectado ambiente sem câmera traseira (PC), acionando câmera padrão...");
+                    
+                    // Fallback para PC: Altera o modo de busca para aceitar a webcam comum frontal
+                    configuracaoStream.constraints.facingMode = "user";
+                    
+                    Quagga.init({
+                        inputStream: configuracaoStream,
+                        decoder: { readers: ["ean_reader", "ean_8_reader"] }
+                    }, function(retryErr) {
+                        if (retryErr) {
+                            console.log("Nenhuma câmera encontrada no dispositivo.", retryErr);
+                            return;
+                        }
+                        Quagga.start();
+                    });
                     return;
                 }
-                console.log("Motor de leitura automática inicializado com sucesso!");
-                Quagga.start(); // Dá o play na câmera e na análise de vídeo
+                console.log("Motor de leitura automática do Cestia operando!");
+                Quagga.start();
             });
 
-            // GATILHO DE SUCESSO: Executado automaticamente assim que descobre um código de barras válido
+            // GATILHO DE SUCESSO DO CÓDIGO DE BARRAS AUTOMÁTICO
             Quagga.onDetected(function(resultado) {
                 const codigoEAN = resultado.codeResult.code;
                 if (codigoEAN) {
-                    Quagga.stop(); // Trava a câmera para não ler o mesmo item duas vezes seguidas
-                    
-                    // Emite um bipe visual e envia o código capturado direto para o Python no backend!
+                    Quagga.stop();
                     alert("║▌║ Código Detectado Automaticamente: " + codigoEAN);
                     window.location.href = "/api/scan/?ean=" + codigoEAN;
                 }
             });
         }
 
-        // Inicializa o olho digital assim que a interface carregar na tela
         window.addEventListener('DOMContentLoaded', iniciarScannerAutomatico);
     </script>
 
