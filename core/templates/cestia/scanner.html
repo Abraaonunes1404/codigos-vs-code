@@ -44,6 +44,7 @@
         <!-- Visor com a Tag de Vídeo Nativa para carregar a imagem na hora -->
         <div class="visor-camera">
             <div class="linha-scanner"></div>
+            <!-- Elemento de video fixado esperando a transmissao -->
             <video id="video-ao-vivo" autoplay playsinline muted></video>
         </div>
 
@@ -66,17 +67,17 @@
         async function forçarAberturaCamera() {
             const elementoVideo = document.getElementById('video-ao-vivo');
             
-            // Tenta abrir diretamente a câmera de trás (environment)
+            // Tenta abrir diretamente a câmera de trás do smartphone
             try {
                 const streamTraseira = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: "environment" } },
+                    video: { facingMode: "environment" },
                     audio: false
                 });
                 elementoVideo.srcObject = streamTraseira;
-                console.log("Câmera traseira ativada de primeira!");
+                console.log("Câmera traseira de gôndola ativada com sucesso!");
             } catch (erroTraseira) {
-                console.log("Ambiente sem câmera traseira rígida (como PC), tentando câmera padrão...");
-                // Fallback: Se for no computador ou não achar a traseira, liga a webcam disponível na hora
+                console.log("Ambiente sem câmera traseira rígida (PC), tentando webcam...");
+                // Fallback seguro: se estiver rodando no PC do Tarumã, abre a webcam padrão de primeira
                 try {
                     const streamPadrao = await navigator.mediaDevices.getUserMedia({
                         video: true,
@@ -84,12 +85,12 @@
                     });
                     elementoVideo.srcObject = streamPadrao;
                 } catch (erroGrave) {
-                    console.log("Nenhuma permissão de hardware concedida.", erroGrave);
+                    console.log("Nenhuma permissão de hardware concedida pelo navegador.", erroGrave);
                 }
             }
         }
 
-        # Dispara o olho digital no instante exato em que a página abre
+        // Inicializa o olho digital no instante exato em que a página abre na tela
         window.addEventListener('DOMContentLoaded', forçarAberturaCamera);
     </script>
 
