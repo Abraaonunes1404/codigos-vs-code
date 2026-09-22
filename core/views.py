@@ -423,3 +423,10 @@ def api_salvar_preco_rapido(request):
             messages.error(request, '❌ Erro ao salvar. Verifique o valor digitado.')
             
         return redirect('atualizar_preco_lojista')
+
+
+def tela_scanner_camera(request):
+    """
+    Renderiza a interface visual escura do visor da camera do Cestia
+    """
+    return render(request, "cestia/scanner.html")
