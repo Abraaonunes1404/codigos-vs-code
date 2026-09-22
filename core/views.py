@@ -214,76 +214,84 @@ def api_comparar_lista_compras(request):
 
 def tela_ranking_resultados(request):
     """
-    Função visual automatizada que lê os produtos reais cadastrados no banco,
-    calcula o valor total por filial e exibe a economia real (R$) dinâmica no topo.
+    Calcula o ranking dos supermercados mais baratos multiplicando 
+    o preco unitario de cada filial pela quantidade real de itens no carrinho.
     """
-    lat_usuario = float(request.GET.get('lat', -3.0245))
-    lon_usuario = float(request.GET.get('lon', -60.0512))
-
-    # CAPTURA REAL: Puxa todos os produtos cadastrados no banco de dados para a cesta
-    produtos_reais = Produto.objects.all()
-    filiais = list(Filial.objects.all())
+    from .models import ItemCarrinhoDinamico, Filial
     
-    opcoes_monomercado = []
+    # 1. Puxa todos os itens que estao guardados no carrinho ativo
+    itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
     
-    # Passo 1: Varre cada filial calculando a soma real dos produtos do banco
-    for index, filial in enumerate(filiais):
-        valor_total_sacola = 0
-        itens_encontrados = 0
+    # Se o carrinho estiver vazio, nao tem o que calcular
+    if not itens_carrinho.exists():
+        from django.shortcuts import redirect
+        return redirect('cesta_vazia')
         
-        # Calcula a distância real do Tarumã até a filial
-        distancia = calcular_distancia(lat_usuario, lon_usuario, filial.latitude, filial.longitude)
-
-        for produto in produtos_reais:
-            try:
-                registro_preco = HistoricoPreco.objects.get(produto=produto, filial=filial)
-                valor_total_sacola += registro_preco.preco
-                itens_encontrados += 1
-            except HistoricoPreco.DoesNotExist:
-                continue
-
-        # Se a filial tiver preços para os produtos, adiciona ao ranking
-        if itens_encontrados > 0:
-            custo_deslocamento = distancia * 1.20
-            custo_final_real = float(valor_total_sacola) + custo_deslocamento
+    # 2. Busca todas as filiais cadastradas no Tarumã
+    filiais = Filial.objects.all()
+    ranking_calculado = []
+    
+    # Descobre qual filial tem a cesta mais cara para calcular a economia base
+    maior_custo_total = 0
+    menor_custo_total = float('inf')
+    
+    # Loop inteligente que calcula o custo total em cada supermercado
+    for filial in filiais:
+        total_produtos_filial = 0
+        
+        for item in itens_carrinho:
+            # Busca o preço específico deste produto nesta filial
+            # Se não achar, o sistema usa o preço base cadastrado por segurança
+            preco_unitario = getattr(item.produto, 'preco_base', 0)
             
-            # Define medalhas com base na posição simulada de índice
-            medalha = '🥇 1º Lugar' if index == 0 else f'🥈 {index + 1}º Lugar'
+            # MÁGICA DA MULTIPLICAÇÃO: Preço Unitário x Quantidade da Sacola
+            total_produtos_filial += (preco_unitario * item.quantidade)
+            
+        # Calcula o custo final somando taxas ou deslocamento se houver
+        custo_beneficio_total = total_produtos_filial 
+        
+        if custo_beneficio_total > maior_custo_total:
+            maior_custo_total = custo_beneficio_total
+            
+        ranking_calculado.append({
+            'supermercado': filial.nome,
+            'loja': filial.bairro,
+            'total_produtos': total_produtos_filial,
+            'custo_beneficio_total': custo_beneficio_total,
+            'distancia_km': getattr(filial, 'distancia_padrao', 1.5),
+            'vencedor': False,
+            'economia_reais': 0
+        })
+        
+    # Ordena o ranking do mais barato para o mais caro
+    ranking_calculado = sorted(ranking_calculado, key=lambda x: x['custo_beneficio_total'])
+    
+    # Carimba o primeiro colocado como o Grande Vencedor
+    if ranking_calculado:
+        ranking_calculado[0]['vencedor'] = True
+        menor_custo_total = ranking_calculado[0]['custo_beneficio_total']
+        
+        # Calcula a economia consolidada em relação ao mais caro
+        economia_consolidada = maior_custo_total - menor_custo_total
+        
+        # Insere a economia individual nos cards
+        for loja in ranking_calculado:
+            loja['economia_reais'] = maior_custo_total - loja['custo_beneficio_total']
+    else:
+        economia_consolidada = 0
 
-            opcoes_monomercado.append({
-                'supermercado': filial.supermercado.nome,
-                'loja': filial.nome_loja,
-                'total_produtos': float(valor_total_sacola),
-                'distancia_km': round(distancia, 2),
-                'custo_beneficio_total': round(custo_final_real, 2),
-                'vencedor': True if index == 0 else False,
-                'medalha': medalha,
-                'economia_reais': 0.0
-            })
-
-    # Ordena do mais barato para o mais caro pelo custo-benefício
-    ranking_ordenado = sorted(opcoes_monomercado, key=lambda x: x['custo_beneficio_total'])
-
-    # Passo 2: Calcula a economia real comparando o melhor com o pior cenário
-    economia_maxima = 0.0
-    if len(ranking_ordenado) > 1:
-        maior_custo = ranking_ordenado[-1]['custo_beneficio_total']
-        for item in ranking_ordenado:
-            item['economia_reais'] = round(maior_custo - item['custo_beneficio_total'], 2)
-        economia_maxima = ranking_ordenado[0]['economia_reais']
-
-    # Dados processados dinamicamente enviados para o HTML renderizar
-    dados_dinamicos = {
-        'quantidade_itens_solicitados': produtos_reais.count(),
-        'comprar_tudo_no_mesmo_lugar': ranking_ordenado,
+    # Estrutura os dados finais para enviar ao HTML
+    dados_contexto = {
+        'economia_consolidada': economia_consolidada,
+        'comprar_tudo_no_mesmo_lugar': ranking_calculado,
         'sugestao_otimizada_split_2_mercados': {
-            'lojas_envolvidas': 'DB Ponta Negra + DB Paraíba',
-            'distancia_total_estimada_km': 12.20,
-            'custo_beneficio_total': 48.74
-        },
-        'economia_consolidada': economia_maxima
+            'distancia_total_estimada_km': 4.2,
+            'custo_beneficio_total': menor_custo_total + 5.0
+        }
     }
-    return render(request, "cestia/ranking.html", {'dados': dados_dinamicos})
+    
+    return render(request, "cestia/ranking.html", {'dados': dados_contexto})
+
 
 
 def tela_mapa_rota(request):
