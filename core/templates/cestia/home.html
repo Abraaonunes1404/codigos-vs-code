@@ -9,7 +9,15 @@
         body { background-color: #F8F9FA; color: #212121; display: flex; justify-content: center; }
         .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding-bottom: 40px; }
         .topo { background-color: #FF6D00; padding: 40px 20px 30px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
+        
+        /* Ajuste do alinhamento do título com a cesta de compras */
+        .cabecalho-linha { display: flex; justify-content: space-between; align-items: center; }
         .titulo-app { font-size: 28px; font-weight: bold; color: #FFF; letter-spacing: 0.5px; }
+        
+        /* ESTILO DO SEU BOTÃO SOLICITADO: Atalho de sacola premium flutuante */
+        .btn-sacola-home { text-decoration: none; background-color: rgba(255, 255, 255, 0.2); width: 42px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: background 0.2s; }
+        .btn-sacola-home:active { background-color: rgba(255, 255, 255, 0.3); }
+
         .boas-vindas { font-size: 15px; color: #FFE0B2; margin-top: 4px; }
         .localizacao-box { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; background-color: rgba(255, 255, 255, 0.15); padding: 8px 15px; border-radius: 20px; }
         .texto-gps { color: #FFF; font-size: 13px; font-weight: 600; }
@@ -32,7 +40,11 @@
     <div class="celular-container">
         <!-- Topo -->
         <div class="topo">
-            <div class="titulo-app">Cestia</div>
+            <div class="cabecalho-linha">
+                <div class="titulo-app">Cestia</div>
+                <!-- SEU NOVO BOTÃO SOLICITADO: Direciona direto para a sacola de compras ativa -->
+                <a href="/cesta/" class="btn-sacola-home" title="Ver minha cesta">🛒</a>
+            </div>
             <div class="boas-vindas">Olá! Qual item vai para a sua cesta hoje?</div>
             <div class="localizacao-box">
                 <div class="texto-gps">📍 Tarumã, Manaus</div>
