@@ -42,25 +42,30 @@
             <div class="sub-scanner">Aponte para o codigo de barras ou para o preco na prateleira</div>
         </div>
 
-        <!-- Interface do Visor que exibe a imagem da câmera real -->
-        <div class="visor-camera">
+               <div class="visor-camera">
             <div class="linha-scanner"></div>
             <!-- Elemento nativo de captura de vídeo -->
             <video id="video-stream" autoplay playsinline muted></video>
         </div>
 
         <div class="controle-container">
-            <button class="btn-foto-produto" onclick="location.href='/api/scan/?foto_produto=true'">
+            <!-- SEU BOTÃO SOLICITADO: Força o celular a abrir APENAS a câmera ao vivo, bloqueando a galeria de fotos -->
+            <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
                 📸 Foto do Produto
-            </button>
+            </label>
+            <form id="form-ia-visao" action="/api/scan/" method="POST" enctype="multipart/form-data" style="display: none;">
+                {% csrf_token %}
+                <input type="file" id="camera-captura" name="imagem_gondola" accept="image/*" capture="environment" onchange="document.getElementById('form-ia-visao').submit();">
+            </form>
 
+            <!-- Botao secundario para ler o codigo de barras tradicional -->
             <button class="btn-simular-barra" onclick="location.href='/api/scan/?ean=7891000100101'">
                 ║▌║ Leitor de Barras Rápido
             </button>
             
             <a href="/cesta/" class="btn-voltar">← Voltar para a Cesta</a>
         </div>
-    </div>
+
 
     <!-- Script Inteligente que ativa a camera traseira do smartphone -->
     <script>
