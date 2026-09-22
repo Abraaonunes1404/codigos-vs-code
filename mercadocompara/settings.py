@@ -136,4 +136,5 @@ import os
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Define que a página de login oficial e segura do Cestia é o painel Admin
-LOGIN_URL = '/admin/login/'
+# Define a rota nomeada nativa do painel de administração para o redirecionamento seguro
+LOGIN_URL = 'admin:login'
