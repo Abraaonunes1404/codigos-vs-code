@@ -260,12 +260,12 @@ def tela_ranking_resultados(request):
         
         for item in itens_carrinho:
             try:
-                # CORREÇÃO: Busca o preço exato deste produto nesta filial específica
+                # Busca o preco exato deste produto nesta filial especifica
                 registro_preco = HistoricoPreco.objects.get(produto=item.produto, filial=filial)
                 preco_real = registro_preco.preco
             except HistoricoPreco.DoesNotExist:
-                # Fallback: Caso o produto não tenha preço nessa loja, assume zero ou valor base
-                preco_real = getattr(item.produto, 'preco_base', 0)
+                # Fallback: Caso o produto nao tenha preco nessa loja, usa o preco base cadastrado
+                preco_real = getattr(item.produto, 'preco_base', 5.50)
             
             # MÁGICA DA MULTIPLICAÇÃO: Preço Real da Filial x Quantidade da Sacola
             total_produtos_filial += (float(preco_real) * item.quantidade)
@@ -275,7 +275,6 @@ def tela_ranking_resultados(request):
         if custo_beneficio_total > maior_custo_total:
             maior_custo_total = custo_beneficio_total
             
-        # CORREÇÃO DE ATRIBUTOS: Usando filial.supermercado.nome e filial.nome_loja do models.py
         ranking_calculado.append({
             'supermercado': filial.supermercado.nome,
             'loja': filial.nome_loja,
@@ -302,7 +301,7 @@ def tela_ranking_resultados(request):
         menor_custo_total = 0
 
     dados_contexto = {
-                'economia_consolidada': economia_consolidada if 'economia_consolidada' in locals() else 0,
+        'economia_consolidada': economia_consolidada,
         'comprar_tudo_no_mesmo_lugar': ranking_calculado,
         'sugestao_otimizada_split_2_mercados': {
             'distancia_total_estimada_km': 4.2,
@@ -311,6 +310,7 @@ def tela_ranking_resultados(request):
     }
     
     return render(request, "cestia/ranking.html", {'dados': dados_contexto})
+
 
 
 def tela_mapa_rota(request):
