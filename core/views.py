@@ -22,11 +22,30 @@ def tela_home_cestia(request):
 
 def tela_cesta_compras(request):
     """
-    Função visual que exibe os produtos adicionados à Cesta do Cestia (Carrinho)
+    Renderiza a tela do carrinho puxando apenas os produtos reais 
+    adicionados dinamicamente via scanner ou clique do usuario.
     """
-    # Busca os produtos reais com IDs 2 e 3 que estão salvos no seu banco de dados atual
-    produtos_na_cesta = Produto.objects.filter(id__in=[2, 3])
-    return render(request, "cestia/cesta.html", {'produtos': produtos_na_cesta})
+    # CAPTURA INTELIGENTE: Busca apenas os registros ativos do carrinho dinâmico
+    itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
+    
+    # Se o carrinho estiver totalmente vazio, joga o usuario para a tela de aviso
+    if not itens_carrinho.exists():
+        from django.shortcuts import redirect
+        return redirect('cesta_vazia')
+        
+    # Organiza os dados para o HTML conseguir ler os campos de nome, marca e quantidade
+    produtos_formatados = []
+    for item in itens_carrinho:
+        produtos_formatados.append({
+            'id': item.produto.id,
+            'nome': item.produto.nome,
+            'marca': item.produto.marca,
+            'quantidade': item.quantidade,
+            'unidade': getattr(item.produto, 'unidade', 'kg')
+        })
+        
+    return render(request, "cestia/cesta.html", {'produtos': produtos_formatados})
+
 
 def api_comparar_produto(request):
     """
