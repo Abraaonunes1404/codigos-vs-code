@@ -295,7 +295,7 @@ def api_scannear_codigo_barra(request):
     # REGRA 1: Se o usuario usou o Leitor de Barras Rapido
     if ean_recebido:
         try:
-            produto = Produto.objects.get(codigo_barras=ean_recebido)
+            produto = Produto.objects.get(gtin_ean=ean_recebido)
             # Cria ou incrementa o produto na tabela dinamica do carrinho
             item, criado = ItemCarrinhoDinamico.objects.get_or_create(produto=produto)
             if not criado:
