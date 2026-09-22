@@ -20,17 +20,17 @@
         .nome-prod { font-size: 14px; font-weight: 700; color: #212121; }
         .marca-prod { font-size: 11px; color: #999; text-transform: uppercase; margin-top: 2px; }
         
-        /* Preços exibidos nos cards */
         .preco-unitario-tag { font-size: 11px; color: #FF6D00; font-weight: 600; margin-top: 3px; }
         .subtotal-item-tag { font-size: 14px; font-weight: 800; color: #2E7D32; margin-top: 2px; }
 
         .qtd-container { display: flex; align-items: center; gap: 8px; background-color: #F1F3F5; padding: 6px 10px; border-radius: 15px; margin-left: 5px; }
-        .btn-qtd-link { text-decoration: none; font-size: 15px; font-weight: bold; color: #FF6D00; padding: 0 4px; }
+        
+        /* Botões transformados em botões de ação JavaScript puro */
+        .btn-qtd-acao { border: none; background: none; font-size: 16px; font-weight: bold; color: #FF6D00; cursor: pointer; padding: 0 4px; }
         .num-qtd { font-size: 13px; font-weight: bold; color: #333; }
         
         .btn-deletar-item { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); text-decoration: none; font-size: 14px; background-color: #FFEBEE; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #FF1744; border: 1px solid #FFCDD2; }
         
-        /* RECEPTÁCULO FIXO DE TOTALIZAÇÃO NO RODAPÉ */
         .rodape-fixo { position: absolute; bottom: 20px; left: 20px; right: 20px; background-color: #FFF; padding-top: 10px; }
         .barra-total-geral { display: flex; justify-content: space-between; align-items: center; background-color: #F1F8E9; border: 1px solid #C8E6C9; padding: 12px 18px; border-radius: 18px; margin-bottom: 12px; }
         .txt-total { font-size: 13px; font-weight: 700; color: #33691E; }
@@ -42,14 +42,6 @@
 <body>
     <div class="celular-container">
         <div class="titulo-pagina">🛒 Sua Cesta</div>
-        
-        {% if messages %}
-            {% for message in messages %}
-                <div style="background-color: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; padding: 12px; border-radius: 15px; margin-bottom: 20px; font-size: 13px; font-weight: 600;">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
         
         <div class="sub-texto">Acompanhe o valor da sua compra em tempo real</div>
         
@@ -66,53 +58,82 @@
         </div>
         
         {% for p in produtos %}
-        <div class="item-carrinho">
+        <div class="item-carrinho" data-produto-id="{{ p.id }}" data-preco-unitario="{{ p.preco_unitario }}">
             <div class="foto-falsa">📦</div>
             <div class="info-produto">
                 <div class="nome-prod">{{ p.nome }}</div>
                 <div class="marca-prod">{{ p.marca }}</div>
-                <!-- Exibe os valores individuais -->
-                <div class="preco-unitario-tag">Unid: R$ {{ p.preco_unitario|floatformat:2 }}</div>
-                <div class="subtotal-item-tag">R$ {{ p.subtotal_item|floatformat:2 }}</div>
+                <div class="preco-unitario-tag">Unid: R\$ {{ p.preco_unitario|floatformat:2 }}</div>
+                <div class="subtotal-item-tag">R\$ <span class="val-subtotal">{{ p.subtotal_item|floatformat:2 }}</span></div>
             </div>
             <div class="qtd-container">
-                <a href="/cesta/alterar/{{ p.id }}/diminuir/" class="btn-qtd-link">-</a>
+                <!-- Alterado para gatilho JS com data-acao -->
+                <button class="btn-qtd-acao" data-acao="diminuir">-</button>
                 <div class="num-qtd">{{ p.quantidade }}</div>
-                <a href="/cesta/alterar/{{ p.id }}/aumentar/" class="btn-qtd-link">+</a>
+                <button class="btn-qtd-acao" data-acao="aumentar">+</button>
             </div>
             
-            <a href="/cesta/remover/{{ p.id }}/" class="btn-deletar-item" title="Remover item">
-                ❌
-            </a>
+            <a href="/cesta/remover/{{ p.id }}/" class="btn-deletar-item" title="Remover item">❌</a>
         </div>
         {% endfor %}
         
-        <!-- CARD DE ATIVAÇÃO DO ROBÔ MONITOR -->
-        <div style="background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border: 1px solid #FFB74D; padding: 18px; border-radius: 20px; margin-top: 25px; box-shadow: 0 4px 12px rgba(255,109,0,0.03);">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                <span style="font-size: 18px;">🤖</span>
-                <h4 style="color: #E65100; font-size: 14px; font-weight: 700;">Ativar Robo de Preco Baixo</h4>
-            </div>
-            <p style="font-size: 11px; color: #5D4037; line-height: 15px; margin-bottom: 12px;">
-                O Cestia vai monitorar esses produtos diariamente nos mercados do Taruma. Se o preco cair, avisamos voce!
-            </p>
-            <div style="display: flex; gap: 8px;">
-                <input type="email" placeholder="Seu melhor e-mail..." style="flex: 1; height: 38px; border: 1px solid #FFB74D; border-radius: 10px; padding-left: 10px; font-size: 12px; outline: none; background-color: #FFF;">
-                <button onclick="alert('✉️ Perfeito! O robo do Cestia ja esta monitorando sua cesta!')" style="background-color: #FF6D00; color: #FFF; border: none; padding: 0 12px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer;">
-                    Ativar
-                </button>
-            </div>
-        </div>
-        
-        <!-- PAINEL FIXO DE FECHAMENTO COM SUB-TOTAL FINANCEIRO GERAL -->
+        <!-- PAINEL FIXO DE FECHAMENTO -->
         <div class="rodape-fixo">
             <div class="barra-total-geral">
                 <span class="txt-total">💰 TOTAL ESTIMADO:</span>
-                <span class="val-total">R$ {{ valor_geral_compra|floatformat:2 }}</span>
+                <span class="val-total">R\$ <span id="total-geral-exibido">{{ valor_geral_compra|floatformat:2 }}</span></span>
             </div>
             <a href="/resultado-cestia/" class="btn-comparar">⚡ COMPARAR MINHA COMPRA</a>
         </div>
     </div>
+
+    <!-- MOTOR REATIVO AUXILIAR SEM REFRESH (AJAX) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const botoesQtd = document.querySelectorAll('.btn-qtd-acao');
+            
+            botoesQtd.forEach(botao => {
+                btnMais=botao.addEventListener('click', function() {
+                    const card = botao.closest('.item-carrinho');
+                    const produtoId = card.getAttribute('data-produto-id');
+                    const precoUnitario = parseFloat(card.getAttribute('data-preco-unitario'));
+                    const acao = botao.getAttribute('data-acao');
+                    
+                    const elementoQtd = card.querySelector('.num-qtd');
+                    const elementoSubtotal = card.querySelector('.val-subtotal');
+                    const elementoTotalGeral = document.getElementById('total-geral-exibido');
+                    
+                    let qtdAtual = parseInt(elementoQtd.textContent);
+                    
+                    if (acao === 'aumentar') {
+                        qtdAtual++;
+                    } else if (acao === 'diminuir' && qtdAtual > 1) {
+                        qtdAtual--;
+                    } else if (acao === 'diminuir' && qtdAtual === 1) {
+                        // Se for 1 e diminuir, redireciona para a rota de exclusão nativa
+                        window.location.href = `/cesta/remover/${produtoId}/`;
+                        return;
+                    }
+                    
+                    // 1. Atualiza visualmente na tela de forma instantânea
+                    elementoQtd.textContent = qtdAtual;
+                    const novoSubtotal = precoUnitario * qtdAtual;
+                    elementoSubtotal.textContent = novoSubtotal.toFixed(2);
+                    
+                    // Recalcula o total geral somando todos os subtotais da tela
+                    let novoTotalGeral = 0;
+                    document.querySelectorAll('.val-subtotal').forEach(sub => {
+                        novoTotalGeral += parseFloat(sub.textContent);
+                    });
+                    elementoTotalGeral.textContent = novoTotalGeral.toFixed(2);
+                    
+                    // 2. Avisa o Django no backend em segundo plano (sem piscar a tela!)
+                    fetch(`/cesta/alterar/${produtoId}/${acao}/`)
+                        .then(response => console.log('Sincronizado com o banco!'))
+                        .catch(err => console.error('Erro de sincronia:', err));
+                });
+            });
+        });
+    </script>
 </body>
 </html>
-
