@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cesta Vazia - Cestia</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #F8F9FA; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .icone-sacola { font-size: 70px; margin-bottom: 20px; filter: drop-shadow(0 4px 10px rgba(255,109,0,0.15)); }
+        .titulo-aviso { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .texto-aviso { font-size: 14px; color: #777; line-height: 20px; margin-bottom: 35px; max-width: 280px; }
+        .btn-adicionar { width: 100%; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; padding: 15px; border-radius: 25px; font-size: 15px; font-weight: bold; text-decoration: none; display: block; box-shadow: 0 4px 15px rgba(255,109,0,0.25); transition: transform 0.2s; }
+        .btn-adicionar:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+    <div class="celular-container">
+        <div class="icone-sacola">🛒💨</div>
+        <h3 class="titulo-aviso">Sua cesta esta vazia</h3>
+        <p class="texto-aviso">Voce removeu todos os produtos. Que tal escanear novos itens na gondola para ver a mágica da economia?</p>
+        <a href="/scanner-cestia/" class="btn-adicionar">📸 ESCANEAR PRODUTOS AGORA</a>
+    </div>
+</body>
+</html>
