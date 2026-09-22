@@ -455,3 +455,24 @@ def tela_cesta_vazia(request):
     Renderiza a interface visual de aviso informando que a cesta esta vazia.
     """
     return render(request, "cestia/cesta_vazia.html")
+
+
+def api_remover_produto_cesta(request, produto_id):
+    """
+    Remove um produto específico do carrinho de compras e 
+    recalcula automaticamente o restante com um aviso em tela.
+    """
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    from .models import Produto
+    
+    try:
+        # Busca o produto que o usuário quer remover
+        produto = Produto.objects.get(id=produto_id)
+        # Envia um balão de aviso informando a remoção com sucesso
+        messages.success(request, f'🗑️ {produto.nome} foi removido e o total foi recalculado!')
+    except Produto.DoesNotExist:
+        messages.error(request, '❌ Produto não encontrado na cesta.')
+        
+    # Redireciona o usuário de volta para a tela de cesta atualizada
+    return redirect('cesta')
