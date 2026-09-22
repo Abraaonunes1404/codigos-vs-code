@@ -7,17 +7,28 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #F8F9FA; display: flex; justify-content: center; }
-        .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; padding-bottom: 100px; }
+        
+        /* AJUSTE ESSENCIAL: Garante que os elementos filhos absolutos fiquem ancorados aqui */
+        .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #FFF; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding: 20px; padding-bottom: 110px; }
+        
         .titulo-pagina { font-size: 22px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 5px; }
         .sub-texto { font-size: 13px; color: #777; margin-bottom: 25px; }
-        .item-carrinho { display: flex; align-items: center; background-color: #FFF; border: 1px solid #E0E0E0; padding: 12px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        
+        /* AJUSTE ESSENCIAL: position relative adicionado para a lixeira fixar no canto */
+        .item-carrinho { display: flex; align-items: center; background-color: #FFF; border: 1px solid #E0E0E0; padding: 12px; padding-right: 45px; border-radius: 20px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        
         .foto-falsa { width: 50px; height: 50px; background-color: #FFE0B2; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-right: 15px; }
         .info-produto { flex: 1; }
         .nome-prod { font-size: 14px; font-weight: 700; color: #212121; }
         .marca-prod { font-size: 11px; color: #999; text-transform: uppercase; margin-top: 2px; }
-        .qtd-container { display: flex; align-items: center; gap: 10px; background-color: #F1F3F5; padding: 6px 12px; border-radius: 15px; }
+        .qtd-container { display: flex; align-items: center; gap: 10px; background-color: #F1F3F5; padding: 6px 12px; border-radius: 15px; margin-right: 5px; }
         .btn-qtd { border: none; background: none; font-size: 16px; font-weight: bold; color: #FF6D00; cursor: pointer; }
         .num-qtd { font-size: 13px; font-weight: bold; }
+        
+        /* ESTILO DA LIXEIRA INDIVIDUAL REATIVA */
+        .btn-deletar-item { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); text-decoration: none; font-size: 14px; background-color: #FFEBEE; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #FF1744; border: 1px solid #FFCDD2; transition: all 0.2s ease; }
+        .btn-deletar-item:hover { background-color: #FFCDD2; }
+        
         .rodape-fixo { position: absolute; bottom: 20px; left: 20px; right: 20px; }
         .btn-comparar { width: 100%; background-color: #00E5FF; color: #FFF; border: none; padding: 15px; border-radius: 25px; font-size: 15px; font-weight: bold; text-align: center; cursor: pointer; text-decoration: none; display: block; box-shadow: 0 4px 12px rgba(0,229,255,0.3); }
     </style>
@@ -25,7 +36,8 @@
 <body>
     <div class="celular-container">
         <div class="titulo-pagina">🛒 Sua Cesta</div>
-                <!-- Bloco de Mensagens de Sucesso Dinâmicas -->
+        
+        <!-- Bloco de Mensagens de Sucesso Dinamicas -->
         {% if messages %}
             {% for message in messages %}
                 <div style="background-color: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; padding: 12px; border-radius: 15px; margin-bottom: 20px; font-size: 13px; font-weight: 600;">
@@ -33,13 +45,17 @@
                 </div>
             {% endfor %}
         {% endif %}
-        <div class="sub-texto">Você tem 2 itens prontos para economizar</div>
-                <!-- Botão de Limpar Cesta Dinâmico -->
+        
+        <div class="sub-texto">Voce tem 2 itens prontos para economizar</div>
+        
+        <!-- Botao de Limpar Cesta Dinamico -->
         {% if produtos %}
         <div style="margin-bottom: 20px; text-align: right;">
             <a href="/limpar-cesta/" style="color: #FF1744; font-size: 12px; font-weight: 700; text-decoration: none; background-color: #FFEBEE; padding: 6px 12px; border-radius: 12px;">🗑️ Limpar Cesta</a>
         </div>
         {% endif %}
+        
+        <!-- Renderizacao dos produtos da sacola -->
         {% for p in produtos %}
         <div class="item-carrinho">
             <div class="foto-falsa">📦</div>
@@ -52,25 +68,35 @@
                 <div class="num-qtd">1</div>
                 <button class="btn-qtd">+</button>
             </div>
+            
+            <!-- LINK DA LIXEIRA INDIVIDUAL REATIVA CONECTADO AO ID DO PRODUTO -->
+            <a href="/cesta/remover/{{ p.id }}/" class="btn-deletar-item" title="Remover item">
+                ❌
+            </a>
         </div>
         {% endfor %}
-                <!-- Card de Ativação do Robô de Alertas Cestia -->
+        
+        <!-- Card de Ativacao do Robo de Alertas Cestia -->
         <div style="background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border: 1px solid #FFB74D; padding: 20px; border-radius: 20px; margin-top: 30px; box-shadow: 0 4px 12px rgba(255,109,0,0.05);">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                 <span style="font-size: 20px;">🤖</span>
-                <h4 style="color: #E65100; font-size: 15px; font-weight: 700;">Ativar Robô de Preço Baixo</h4>
+                <h4 style="color: #E65100; font-size: 15px; font-weight: 700;">Ativar Robo de Preco Baixo</h4>
             </div>
             <p style="font-size: 12px; color: #5D4037; line-height: 16px; margin-bottom: 15px;">
-                Deseja pagar menos? O Cestia vai monitorar esses produtos diariamente nos mercados do Tarumã. Se o preço cair, avisamos você!
+                Deseja pagar menos? O Cestia vai monitorar esses produtos diariamente nos mercados do Taruma. Se o preco cair, avisamos voce!
             </p>
             <div style="display: flex; gap: 8px;">
                 <input type="email" placeholder="Seu melhor e-mail..." style="flex: 1; height: 42px; border: 1px solid #FFB74D; border-radius: 12px; padding-left: 12px; font-size: 13px; outline: none; background-color: #FFF;">
-                <button onclick="alert('✉️ Perfeito! O robô do Cestia já está monitorando sua cesta de compras!')" style="background-color: #FF6D00; color: #FFF; border: none; padding: 0 15px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 6px rgba(255,109,0,0.2);">
+                <button onclick="alert('✉️ Perfeito! O robo do Cestia ja esta monitorando sua cesta de compras!')" style="background-color: #FF6D00; color: #FFF; border: none; padding: 0 15px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 6px rgba(255,109,0,0.2);">
                     Ativar
                 </button>
             </div>
         </div>
+        
         <div class="rodape-fixo">
             <a href="/resultado-cestia/" class="btn-comparar">⚡ COMPARAR MINHA COMPRA</a>
         </div>
     </div>
+</body>
+</html>
+
