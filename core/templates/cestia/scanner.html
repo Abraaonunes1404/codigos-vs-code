@@ -47,20 +47,20 @@
             <span style="font-size: 40px; opacity: 0.3; color: #FFF;">📷</span>
             <p style="font-size: 11px; color: #666; margin-top: 10px; font-weight: 600;">Modo Hibrido: IA + EAN Ativos</p>
         </div>
-
-                <div class="class-controle-container">
+        <div class="class-controle-container" style="display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px;">
             <!-- SEU BOTAO SOLICITADO: Foto do Produto conectada com a IA -->
-            <button class="btn-foto-produto" onclick="location.href='/api/scan/?foto_produto=true'">
+            <button class="btn-foto-produto" onclick="location.href='/api/scan/?foto_produto=true'" style="width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3);">
                 📸 Foto do Produto
             </button>
 
-            <!-- Botao secundario para ler o codigo de barras tradicional -->
-            <button class="btn-simular-barra" onclick="location.href='/api/scan/?ean=7891000100101'">
+            <!-- Botao para ler o codigo de barras tradicional -->
+            <button class="btn-simular-barra" onclick="location.href='/api/scan/?ean=7891000100101'" style="width: 100%; height: 46px; background-color: #263238; color: #ECEFF1; border: 1px solid #37474F; border-radius: 23px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                 ║▌║ Leitor de Barras Rápido
             </button>
             
-            <a href="/cesta/" class="btn-voltar">← Voltar para a Cesta</a>
+            <a href="/cesta/" class="btn-voltar" style="text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px;">← Voltar para a Cesta</a>
         </div>
+
 
 </body>
 </html>
