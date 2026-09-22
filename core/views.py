@@ -22,29 +22,51 @@ def tela_home_cestia(request):
 
 def tela_cesta_compras(request):
     """
-    Renderiza a tela do carrinho puxando apenas os produtos reais 
-    adicionados dinamicamente via scanner ou clique do usuario.
+    Renderiza a tela da cesta calculando o preço unitário, o subtotal 
+    de cada item e o valor geral acumulado da compra em tempo real.
     """
-    # CAPTURA INTELIGENTE: Busca apenas os registros ativos do carrinho dinâmico
+    from django.shortcuts import render, redirect
+    from .models import ItemCarrinhoDinamico
+    
+    # Busca apenas os itens que estão de verdade no carrinho
     itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
     
-    # Se o carrinho estiver totalmente vazio, joga o usuario para a tela de aviso
     if not itens_carrinho.exists():
-        from django.shortcuts import redirect
         return redirect('cesta_vazia')
         
-    # Organiza os dados para o HTML conseguir ler os campos de nome, marca e quantidade
     produtos_formatados = []
+    valor_geral_compra = 0.0
+    
     for item in itens_carrinho:
+        # Puxa o preço base cadastrado no banco de dados
+        preco_unitario = float(getattr(item.produto, 'preco_base', 0.0))
+        if preco_unitario == 0.0:
+            # Fallback caso não tenha preco_base: tenta buscar o primeiro preço do histórico
+            from .models import HistoricoPreco
+            historico = HistoricoPreco.objects.filter(produto=item.produto).first()
+            preco_unitario = float(historico.preco) if historico else 5.50 # Valor padrão de segurança
+            
+        # Calcula o valor total deste item multiplicado pela quantidade
+        subtotal_item = preco_unitario * item.quantidade
+        valor_geral_compra += subtotal_item
+        
         produtos_formatados.append({
             'id': item.produto.id,
             'nome': item.produto.nome,
             'marca': item.produto.marca,
             'quantidade': item.quantidade,
-            'unidade': getattr(item.produto, 'unidade', 'kg')
+            'unidade': getattr(item.produto, 'unidade', 'un'),
+            'preco_unitario': preco_unitario,
+            'subtotal_item': subtotal_item
         })
         
-    return render(request, "cestia/cesta.html", {'produtos': produtos_formatados})
+    contexto = {
+        'produtos': produtos_formatados,
+        'valor_geral_compra': valor_geral_compra
+    }
+        
+    return render(request, "cestia/cesta.html", contexto)
+
 
 
 def api_comparar_produto(request):
