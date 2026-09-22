@@ -51,16 +51,6 @@
             <a href="/rota-cestia/" class="aba" style="text-decoration: none; color: #495057;">Fazer Rota (Mapa)</a>
         </div>
 
-        <!-- Botao de Compartilhar no WhatsApp - API Nativa Direta -->
-        <div style="margin: -5px 0px 20px 0px;">
-            <a href="https://whatsapp.com{{ dados.economia_consolidada|floatformat:2 }}%20na%20minha%20lista%20de%20compras%20usando%20o%20*Cestia*!%20O%20app%20comparou%20os%20pre%C3%A7os%20nos%20mercados%20do%20Tarum%C3%A3%20e%20me%20deu%20a%20rota%20mais%20barata.%20Faz%20o%20teste%20voc%C3%AA%20tamb%C3%A9m%20no%20link:%20https://cestia.com.br" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #25D366; color: #FFF; text-decoration: none; padding: 12px; border-radius: 15px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 10px rgba(37,211,102,0.2);">
-                <span>💬</span> Compartilhar Economia no WhatsApp
-            </a>
-        </div>
-
         <!-- Exibe os supermercados do ranking -->
         {% for m in dados.comprar_tudo_no_mesmo_lugar %}
         <div class="card-mercado {% if m.vencedor %}vencedor{% endif %}">
