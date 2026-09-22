@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -16,7 +16,7 @@
         /* AREA VISOR DA CAMERA REAL */
         .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 25px 0; border: 3px solid #FF6D00; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
         
-        /* Container de injeção de vídeo do Quagga */
+        /* Container de injeï¿½ï¿½o de vï¿½deo do Quagga */
         #interactive.viewport { width: 100%; height: 100%; position: absolute; }
         #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
         canvas.drawingBuffer { display: none; }
@@ -34,8 +34,8 @@
         .btn-foto-produto { width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); text-align: center; line-height: 52px; }
         .btn-voltar { text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px; }
     </style>
-    <!-- LINK CORRIGIDO: Importação oficial e direta da biblioteca CDNJS do QuaggaJS -->
-       <!-- IMPORTAÇÃO CORRETA E DIRETA DA BIBLIOTECA DO SCANNER AUTOMÁTICO -->
+    <!-- LINK CORRIGIDO: Importaï¿½ï¿½o oficial e direta da biblioteca CDNJS do QuaggaJS -->
+       <!-- IMPORTAï¿½ï¿½O CORRETA E DIRETA DA BIBLIOTECA DO SCANNER AUTOMï¿½TICO -->
     <script src="https://cloudflare.com"></script>
 
 </head>
@@ -44,7 +44,7 @@
     <div class="celular-container">
         <div class="topo-scanner">
             <div class="titulo-scanner">?? Scanner IA Cestia</div>
-            <div class="sub-scanner">Mire o codigo de barras para ler automatico ou tire foto do preço</div>
+            <div class="sub-scanner">Mire o codigo de barras para ler automatico ou tire foto do preï¿½o</div>
         </div>
 
         <div class="visor-camera">
@@ -53,9 +53,9 @@
         </div>
 
         <div class="controle-container">
-            <!-- TRAVA DE SEGURANÇA: Abre exclusivamente a câmera de gôndola instantânea -->
+            <!-- TRAVA DE SEGURANï¿½A: Abre exclusivamente a cï¿½mera de gï¿½ndola instantï¿½nea -->
             <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
-                ?? Foto do Produto e Preço
+                ?? Foto do Produto e Preï¿½o
             </label>
             <form id="form-ia-visao" action="/api/scan/" method="POST" enctype="multipart/form-data" style="display: none;">
                 {% csrf_token %}
@@ -66,7 +66,7 @@
         </div>
     </div>
 
-    <!-- MOTOR DE DETECÇÃO ADAPTÁVEL PC / SMARTPHONE -->
+    <!-- MOTOR DE DETECï¿½ï¿½O ADAPTï¿½VEL PC / SMARTPHONE -->
     <script>
         function iniciarScannerAutomatico() {
             const configuracaoStream = {
@@ -76,7 +76,7 @@
                 constraints: {
                     width: { min: 640, ideal: 1280 },
                     height: { min: 480, ideal: 720 },
-                    facingMode: "environment" // Preferência máxima: câmera traseira
+                    facingMode: "environment" // Preferï¿½ncia mï¿½xima: cï¿½mera traseira
                 }
             };
 
@@ -88,7 +88,7 @@
                 locate: true
             }, function(err) {
                 if (err) {
-                    console.log("Detectado ambiente sem câmera traseira (PC), acionando câmera padrão...");
+                    console.log("Detectado ambiente sem cï¿½mera traseira (PC), acionando cï¿½mera padrï¿½o...");
                     
                     // Fallback para PC: Altera o modo de busca para aceitar a webcam comum frontal
                     configuracaoStream.constraints.facingMode = "user";
@@ -98,23 +98,23 @@
                         decoder: { readers: ["ean_reader", "ean_8_reader"] }
                     }, function(retryErr) {
                         if (retryErr) {
-                            console.log("Nenhuma câmera encontrada no dispositivo.", retryErr);
+                            console.log("Nenhuma cï¿½mera encontrada no dispositivo.", retryErr);
                             return;
                         }
                         Quagga.start();
                     });
                     return;
                 }
-                console.log("Motor de leitura automática do Cestia operando!");
+                console.log("Motor de leitura automï¿½tica do Cestia operando!");
                 Quagga.start();
             });
 
-            // GATILHO DE SUCESSO DO CÓDIGO DE BARRAS AUTOMÁTICO
+            // GATILHO DE SUCESSO DO Cï¿½DIGO DE BARRAS AUTOMï¿½TICO
             Quagga.onDetected(function(resultado) {
                 const codigoEAN = resultado.codeResult.code;
                 if (codigoEAN) {
                     Quagga.stop();
-                    alert("¦¦¦ Código Detectado Automaticamente: " + codigoEAN);
+                    alert("ï¿½ï¿½ï¿½ Cï¿½digo Detectado Automaticamente: " + codigoEAN);
                     window.location.href = "/api/scan/?ean=" + codigoEAN;
                 }
             });
