@@ -430,3 +430,21 @@ def tela_scanner_camera(request):
     Renderiza a interface visual escura do visor da camera do Cestia
     """
     return render(request, "cestia/scanner.html")
+
+
+def api_limpar_cesta(request):
+    """
+    Função automatica que esvazia por completo o carrinho dinamico 
+    do usuario e o joga de volta para a tela de cesta vazia.
+    """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    
+    try:
+        # Apaga de verdade todos os registros guardados na tabela do carrinho
+        ItemCarrinhoDinamico.objects.all().delete()
+        messages.success(request, '🛒 Sacola esvaziada com sucesso!')
+    except Exception:
+        pass
+        
+    return redirect('cesta_vazia')
