@@ -21,7 +21,6 @@
         .marca-prod { font-size: 11px; color: #999; text-transform: uppercase; margin-top: 2px; }
         .qtd-container { display: flex; align-items: center; gap: 10px; background-color: #F1F3F5; padding: 6px 12px; border-radius: 15px; margin-right: 5px; }
         
-        /* Botões de quantidade transformados em links visuais */
         .btn-qtd-link { text-decoration: none; font-size: 16px; font-weight: bold; color: #FF6D00; cursor: pointer; display: inline-block; padding: 0 4px; }
         .num-qtd { font-size: 13px; font-weight: bold; color: #333; }
         
@@ -46,11 +45,19 @@
         
         <div class="sub-texto">Gerencie as quantidades da sua lista para economizar</div>
         
-        {% if produtos %}
-        <div style="margin-bottom: 20px; text-align: right;">
-            <a href="/limpar-cesta/" style="color: #FF1744; font-size: 12px; font-weight: 700; text-decoration: none; background-color: #FFEBEE; padding: 6px 12px; border-radius: 12px;">🗑️ Limpar Cesta</a>
+        <!-- PAINEL DE BOTÕES DE AÇÃO SUPERIOR -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <!-- NOVO BOTÃO DE CÂMERA INTELIGENTE HÍBRIDA -->
+            <a href="/scanner-cestia/" style="display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; text-decoration: none; padding: 10px 16px; border-radius: 15px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 10px rgba(255,109,0,0.2);">
+                ➕ Adicionar Produto
+            </a>
+
+            {% if produtos %}
+            <a href="/limpar-cesta/" style="color: #FF1744; font-size: 12px; font-weight: 700; text-decoration: none; background-color: #FFEBEE; padding: 10px 14px; border-radius: 15px; border: 1px solid #FFCDD2;">
+                🗑️ Limpar Cesta
+            </a>
+            {% endif %}
         </div>
-        {% endif %}
         
         {% for p in produtos %}
         <div class="item-carrinho">
@@ -60,10 +67,8 @@
                 <div class="marca-prod">{{ p.marca }} ({{ p.unidade }})</div>
             </div>
             <div class="qtd-container">
-                <!-- Botão de diminuir quantidade conectado ao backend -->
                 <a href="/cesta/alterar/{{ p.id }}/diminuir/" class="btn-qtd-link">-</a>
                 <div class="num-qtd">{{ p.quantidade }}</div>
-                <!-- Botão de aumentar quantidade conectado ao backend -->
                 <a href="/cesta/alterar/{{ p.id }}/aumentar/" class="btn-qtd-link">+</a>
             </div>
             
