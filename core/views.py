@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from core.models import Produto, Filial, HistoricoPreco, AlertaPreco
+from .models import Produto, Filial, HistoricoPreco, AlertaPreco, ItemCarrinhoDinamico
 import math
 
 def calcular_distancia(lat1, lon1, lat2, lon2):
