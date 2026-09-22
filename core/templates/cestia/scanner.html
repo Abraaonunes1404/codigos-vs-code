@@ -13,9 +13,13 @@
         .titulo-scanner { font-size: 18px; font-weight: bold; color: #FF6D00; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .sub-scanner { font-size: 11px; color: #AAA; margin-top: 4px; }
 
-        /* AREA VISOR DA CAMERA */
-        .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 25px 0; border: 3px solid #FF6D00; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
-        .linha-scanner { width: 85%; height: 2px; background-color: #00E5FF; position: absolute; animation: escaneando 2.5s infinite linear; box-shadow: 0 0 10px #00E5FF; }
+        /* AREA VISOR DA CAMERA REAL */
+        .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 25px 0; border: 3px solid #FF6D00; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
+        
+        /* Tag de video que vai receber o sinal da lente do celular */
+        #video-stream { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+        
+        .linha-scanner { width: 85%; height: 2px; background-color: #00E5FF; position: absolute; z-index: 10; animation: escaneando 2.5s infinite linear; box-shadow: 0 0 10px #00E5FF; }
         
         @keyframes escaneando {
             0% { top: 15%; }
@@ -24,11 +28,8 @@
         }
 
         /* BOTOES DE CONTROLE */
-        .controle-container { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px; }
-        
-        /* O Botao solicitado por você */
+        .controle-container { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px; z-index: 10; }
         .btn-foto-produto { width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); }
-        
         .btn-simular-barra { width: 100%; height: 46px; background-color: #263238; color: #ECEFF1; border: 1px solid #37474F; border-radius: 23px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-voltar { text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px; }
     </style>
@@ -41,28 +42,57 @@
             <div class="sub-scanner">Aponte para o codigo de barras ou para o preco na prateleira</div>
         </div>
 
-        <!-- Interface do Visor com a Linha de IA Varrendo -->
+        <!-- Interface do Visor que exibe a imagem da câmera real -->
         <div class="visor-camera">
             <div class="linha-scanner"></div>
-            <span style="font-size: 40px; opacity: 0.3; color: #FFF;">📷</span>
-            <p style="font-size: 11px; color: #666; margin-top: 10px; font-weight: 600;">Modo Hibrido: IA + EAN Ativos</p>
+            <!-- Elemento nativo de captura de vídeo -->
+            <video id="video-stream" autoplay playsinline muted></video>
         </div>
-        <div class="class-controle-container" style="display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px;">
-                <div class="class-controle-container" style="display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px;">
-            <!-- SEU BOTAO SOLICITADO: Foto do Produto conectada com a IA -->
-            <button class="btn-foto-produto" onclick="location.href='/api/scan/?foto_produto=true'" style="width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3);">
+
+        <div class="controle-container">
+            <button class="btn-foto-produto" onclick="location.href='/api/scan/?foto_produto=true'">
                 📸 Foto do Produto
             </button>
 
-            <!-- Botao para ler o codigo de barras tradicional -->
-            <button class="btn-simular-barra" onclick="location.href='/api/scan/?ean=7891000100101'" style="width: 100%; height: 46px; background-color: #263238; color: #ECEFF1; border: 1px solid #37474F; border-radius: 23px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <button class="btn-simular-barra" onclick="location.href='/api/scan/?ean=7891000100101'">
                 ║▌║ Leitor de Barras Rápido
             </button>
             
-            <a href="/cesta/" class="btn-voltar" style="text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px;">← Voltar para a Cesta</a>
+            <a href="/cesta/" class="btn-voltar">← Voltar para a Cesta</a>
         </div>
+    </div>
 
+    <!-- Script Inteligente que ativa a camera traseira do smartphone -->
+    <script>
+        async function iniciarCameraReal() {
+            const video = document.getElementById('video-stream');
+            
+            // Configurações para forçar o uso da câmera traseira com foco automático
+            const restricoes = {
+                video: {
+                    facingMode: { exact: "environment" } // Alvo: Câmera de trás do celular
+                },
+                audio: false
+            };
 
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(restricoes);
+                video.srcObject = stream;
+            } catch (erro) {
+                console.log("Câmera traseira específica não encontrada, tentando câmera padrão...", erro);
+                // Fallback: se estiver no computador ou não achar a traseira exata, abre a câmera disponível (ex: webcam)
+                try {
+                    const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    video.srcObject = fallbackStream;
+                } catch (erroGrave) {
+                    alert("Aviso: Não foi possível acessar a câmera do aparelho. Verifique as permissões do seu navegador.");
+                }
+            }
+        }
+
+        // Inicializa o olho digital assim que a página terminar de carregar
+        window.addEventListener('DOMContentLoaded', iniciarCameraReal);
+    </script>
 
 </body>
 </html>
