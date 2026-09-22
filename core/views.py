@@ -14,11 +14,37 @@ def calcular_distancia(lat1, lon1, lat2, lon2):
 
 def tela_home_cestia(request):
     """
-    Função que renderiza a interface visual oficial da Home do Cestia
+    Renderiza a tela inicial do Cestia e aproveita o primeiro carregamento
+    para injetar em massa os novos produtos de teste direto no banco da nuvem.
     """
-    from core.models import Categoria
-    categorias = Categoria.objects.all()
-    return render(request, "cestia/home.html", {'categorias': categorias})
+    from django.shortcuts import render
+    from .models import Produto, Categoria
+    from django.db import models
+
+    try:
+        # Garante que as categorias principais existam no banco da Render
+        cat_text, _ = Categoria.objects.get_or_create(nome="Mercearia")
+        cat_limp, _ = Categoria.objects.get_or_create(nome="Limpeza")
+
+        # Lista de produtos estrategicos para a sua busca preditiva flutuante
+        novos_produtos = [
+            {"gtin_ean": "7891000100202", "nome": "Feijao Carioca", "marca": "Kicaldo", "quantidade": 1.0, "unidade": "kg", "categoria": cat_text},
+            {"gtin_ean": "7891000100303", "nome": "Feijao Preto", "marca": "Comilhao", "quantidade": 1.0, "unidade": "kg", "categoria": cat_text},
+            {"gtin_ean": "7891000100404", "nome": "Macarrao Espaguete", "marca": "Dona Benta", "quantidade": 500.0, "unidade": "un", "categoria": cat_text},
+            {"gtin_ean": "7891000100505", "nome": "Oleo de Soja", "marca": "Soya", "quantidade": 900.0, "unidade": "L", "categoria": cat_text},
+            {"gtin_ean": "7891000100606", "nome": "Sabao em Po", "marca": "Omo", "quantidade": 1.6, "unidade": "kg", "categoria": cat_limp},
+            {"gtin_ean": "7891000100707", "nome": "Detergente Liquido", "marca": "Ype", "quantidade": 500.0, "unidade": "L", "categoria": cat_limp},
+        ]
+
+        # Varre a lista e insere os produtos pulando os que ja existem
+        for dados in novos_produtos:
+            Produto.objects.get_or_create(gtin_ean=dados["gtin_ean"], defaults=dados)
+            
+    except Exception as e:
+        print(f"Aviso na carga automatica: {str(e)}")
+
+    # Carrega a tela inicial normalmente para o usuario
+    return render(request, "cestia/home.html")
 
 def tela_cesta_compras(request):
     """
@@ -566,7 +592,7 @@ def api_sugestoes_pesquisa(request):
     from django.http import JsonResponse
     from .models import Produto
     from django.db import models
-    
+
     termo_digitado = request.GET.get('q', '').strip().lower()
     resultados = []
     
