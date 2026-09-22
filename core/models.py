@@ -47,3 +47,21 @@ class AlertaPreco(models.Model):
 
     def __str__(self):
         return f"Alerta: {self.produto.nome} abaixo de R$ {self.preco_alvo}"
+
+
+class ItemCarrinhoDinamico(models.Model):
+    """
+    Tabela automatica que gerencia a sacola de compras viva do usuario,
+    permitindo acumular quantidades e recalcular valores em tempo real.
+    """
+    produto = models.ForeignKey('Produto', on_delete=models.CASCADE, verbose_name="Produto")
+    quantidade = models.PositiveIntegerField(default=1, verbose_name="Quantidade")
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Item do Carrinho Dinamico"
+        verbose_name_plural = "Itens do Carrinho Dinamico"
+
+    def __str__(self):
+        return f"{self.quantidade}x {self.produto.nome}"
+
