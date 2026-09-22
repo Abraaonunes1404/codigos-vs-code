@@ -13,11 +13,11 @@
         .titulo-scanner { font-size: 18px; font-weight: bold; color: #FF6D00; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .sub-scanner { font-size: 11px; color: #AAA; margin-top: 4px; }
 
-        /* AREA VISOR DA CAMERA REAL */
+        /* AREA VISOR DA CAMERA REAL REESTRUTURADA */
         .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 25px 0; border: 3px solid #FF6D00; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
         
-        /* Container onde o Quagga injetara o video ao vivo */
-        #interactive.viewport { width: 100%; height: 100%; position: absolute; }
+        /* Container de injecao de video corrigido para o Quagga */
+        #interactive.viewport { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
         canvas.drawingBuffer { display: none; }
         
@@ -34,7 +34,7 @@
         .btn-foto-produto { width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); text-align: center; line-height: 52px; }
         .btn-voltar { text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px; }
     </style>
-    <!-- LINK CORRIGIDO DEFINITIVO: Carrega a biblioteca real do leitor de codigo de barras -->
+    <!-- IMPORTACAO OFICIAL DO SCRIPT DO LEITOR AUTOMATICO -->
     <script src="https://cloudflare.com"></script>
 </head>
 <body>
@@ -51,7 +51,7 @@
         </div>
 
         <div class="controle-container">
-            <!-- TRAVA DE SEGURANCA: Abre exclusivamente a camera de gondola instantanea do celular -->
+            <!-- TRAVA DE SEGURANCA: Abre exclusivamente a camera traseira do celular de gôndola -->
             <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
                 Foto do Produto e Preco
             </label>
@@ -64,7 +64,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE INTELIGENCIA DE DETECCAO EM TEMPO REAL ADAPTAVEL -->
+    <!-- SCRIPT ADAPTAVEL PC / SMARTPHONE COM RESET COMPLETO -->
     <script>
         function iniciarScannerAutomatico() {
             Quagga.init({
@@ -73,7 +73,7 @@
                     type: "LiveStream",
                     target: document.querySelector('#interactive'),
                     constraints: {
-                        facingMode: "environment" // Alvo preferencial: camera de tras do celular
+                        facingMode: "environment" // Preferência maxima: camera traseira do celular
                     }
                 },
                 decoder: {
@@ -82,7 +82,9 @@
                 locate: true
             }, function(err) {
                 if (err) {
-                    console.log("PC detectado, tentando acionar webcam comum...");
+                    console.log("Ambiente sem camera traseira detectado, acionando camera padrao...");
+                    
+                    // Fallback para PC: Altera o facingMode para aceitar webcams comuns frontais
                     Quagga.init({
                         inputStream: {
                             name: "Live",
@@ -92,14 +94,14 @@
                         decoder: { readers: ["ean_reader", "ean_8_reader"] }
                     }, function(retryErr) {
                         if (retryErr) {
-                            console.log("Nenhuma camera encontrada neste dispositivo.", retryErr);
+                            console.log("Nenhuma lente de video ativa.", retryErr);
                             return;
                         }
                         Quagga.start();
                     });
                     return;
                 }
-                console.log("Motor de leitura automatica do Cestia operando!");
+                console.log("Leitor automatico inicializado com sucesso!");
                 Quagga.start();
             });
 
@@ -108,7 +110,7 @@
                 const codigoEAN = resultado.codeResult.code;
                 if (codigoEAN) {
                     Quagga.stop();
-                    alert("Codigo Detectado Automaticamente: " + codigoEAN);
+                    alert("Codigo Detectado: " + codigoEAN);
                     window.location.href = "/api/scan/?ean=" + codigoEAN;
                 }
             });
