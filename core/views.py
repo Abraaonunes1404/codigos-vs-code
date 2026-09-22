@@ -215,47 +215,6 @@ def api_comparar_lista_compras(request):
 def tela_ranking_resultados(request):
     """
     Calcula o ranking dos supermercados mais baratos multiplicando 
-    o preco unitario de cada filial pela quantidade real de itens no carrinho.
-    """
-    from .models import ItemCarrinhoDinamico, Filial
-    
-    # 1. Puxa todos os itens que estao guardados no carrinho ativo
-    itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
-    
-    # Se o carrinho estiver vazio, nao tem o que calcular
-    if not itens_carrinho.exists():
-        from django.shortcuts import redirect
-        return redirect('cesta_vazia')
-        
-    # 2. Busca todas as filiais cadastradas no Tarumã
-    filiais = Filial.objects.all()
-    ranking_calculado = []
-    
-    # Descobre qual filial tem a cesta mais cara para calcular a economia base
-    maior_custo_total = 0
-    menor_custo_total = float('inf')
-    
-    # Loop inteligente que calcula o custo total em cada supermercado
-    for filial in filiais:
-        total_produtos_filial = 0
-        
-        for item in itens_carrinho:
-            # Busca o preço específico deste produto nesta filial
-            # Se não achar, o sistema usa o preço base cadastrado por segurança
-            preco_unitario = getattr(item.produto, 'preco_base', 0)
-            
-            # MÁGICA DA MULTIPLICAÇÃO: Preço Unitário x Quantidade da Sacola
-            total_produtos_filial += (preco_unitario * item.quantidade)
-            
-        # Calcula o custo final somando taxas ou deslocamento se houver
-        custo_beneficio_total = total_produtos_filial 
-        
-        if custo_beneficio_total > maior_custo_total:
-            maior_custo_total = custo_beneficio_total
-            
-        rdef tela_ranking_resultados(request):
-    """
-    Calcula o ranking dos supermercados mais baratos multiplicando 
     o preco real de cada filial no HistoricoPreco pela quantidade da sacola.
     """
     from django.shortcuts import render, redirect
@@ -321,7 +280,7 @@ def tela_ranking_resultados(request):
         menor_custo_total = 0
 
     dados_contexto = {
-        'economia_consolidada': economy_consolidada if 'economia_consolidada' in locals() else 0,
+                'economia_consolidada': economia_consolidada if 'economia_consolidada' in locals() else 0,
         'comprar_tudo_no_mesmo_lugar': ranking_calculado,
         'sugestao_otimizada_split_2_mercados': {
             'distancia_total_estimada_km': 4.2,
@@ -330,8 +289,6 @@ def tela_ranking_resultados(request):
     }
     
     return render(request, "cestia/ranking.html", {'dados': dados_contexto})
-
-
 
 
 def tela_mapa_rota(request):
