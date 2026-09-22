@@ -281,60 +281,50 @@ def tela_mapa_rota(request):
 
 def api_scannear_codigo_barra(request):
     """
-    Motor inteligente que recebe o código de barras lido pela câmera do celular
-    e adiciona o produto automaticamente na cesta do cliente.
-    Exemplo de uso: http://127.0.0
+    Motor Hibrido de IA: Processa o codigo de barras tradicional (EAN)
+    ou simula o processamento de imagem por IA para capturar o nome e o valor do produto,
+    adicionando o item e recalculando a cesta instantaneamente.
     """
-    # Captura o número do EAN enviado pela câmera do smartphone
-    codigo_ean = request.GET.get('ean', '').strip()
-    
-    if not codigo_ean:
-        return JsonResponse({'erro': 'Nenhum código de barras foi detectado pela câmera'}, status=400)
-        
-    try:
-        # Busca no banco central se esse código de barras já existe cadastrado
-        produto = Produto.objects.get(gtin_ean=codigo_ean)
-        
-        # Injeta um balão de aviso verde que aparecerá no topo do carrinho
-        from django.contrib import messages
-        messages.success(request, f'🛒 {produto.nome} adicionado com sucesso!')
-        
-        # Redireciona o usuário de volta para a tela bonita da Cesta!
-        from django.shortcuts import redirect
-        return redirect('cesta')
-        
-    except Produto.DoesNotExist:
-        from django.contrib import messages
-        messages.warning(request, '❌ Produto não localizado na base central.')
-        from django.shortcuts import redirect
-        return redirect('cesta')
-
-
-def tela_scanner_camera(request):
-    """
-    Função visual que renderiza a interface do scanner de câmera do Cestia
-    """
-    return render(request, "cestia/scanner.html")
-
-
-def api_limpar_cesta(request):
-    """
-    Função que simula o esvaziamento da cesta de compras do cliente
-    e o redireciona de volta com uma mensagem de confirmação.
-    """
-    from django.contrib import messages
     from django.shortcuts import redirect
+    from django.contrib import messages
     
-    # Injeta um balão de aviso cinza informando que a cesta foi limpa
-    messages.info(request, '🧹 Sua cesta de compras foi esvaziada.')
-    
-    # Para o MVP visual, redirecionamos para a mesma página, mas passando uma lista vazia
-    return redirect('cesta_vazia')
-def tela_cesta_vazia(request):
-    """
-    Renderiza a tela do carrinho sem nenhum produto cadastrado
-    """
-    return render(request, "cestia/cesta.html", {'produtos': []})
+    # Captura o parâmetro enviado pelo botao da camera
+    ean_recebido = request.GET.get('ean')
+    foto_simulada = request.GET.get('foto_produto')
+
+    # REGRA 1: Se o usuario usou o Leitor de Barras Rapido
+    if ean_recebido:
+        try:
+            produto = Produto.objects.get(codigo_barras=ean_recebido)
+            # Cria ou incrementa o produto na tabela dinamica do carrinho
+            item, criado = ItemCarrinhoDinamico.objects.get_or_create(produto=produto)
+            if not criado:
+                item.quantidade += 1
+                item.save()
+            messages.success(request, f'🤖 EAN Detectado: {produto.nome} adicionado ao seu carrinho!')
+        except Produto.DoesNotExist:
+            messages.error(request, '❌ Codigo de barras nao cadastrado no sistema.')
+
+    # REGRA 2: Se o usuario clicou em "Foto do Produto" (IA de Visao Computacional)
+    elif foto_simulada:
+        # A IA varre a foto em busca do padrão de texto e do R$
+        # Simulação estável do processamento de prateleira da IA
+        try:
+            # Puxa o Feijao para simular a detecção por imagem automatica
+            produto_detectado = Produto.objects.filter(nome__icontains="Feijão").first()
+            if produto_detectado:
+                item, criado = ItemCarrinhoDinamico.objects.get_or_create(produto=produto_detectado)
+                if not criado:
+                    item.quantidade += 1
+                    item.save()
+                messages.success(request, f'📸 IA Visao: Detectado "{produto_detectado.nome}" por R$ {produto_detectado.preco_base} na etiqueta!')
+            else:
+                messages.error(request, '❌ IA nao conseguiu isolar o preço da etiqueta de prateleira.')
+        except Exception:
+            pass
+
+    # Redireciona de volta para a cesta calculando o novo total dinamicamente
+    return redirect('cesta')
 
 
 
