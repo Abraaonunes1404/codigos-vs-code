@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -41,7 +41,7 @@
 
     <div class="celular-container">
         <div class="topo-scanner">
-            <div class="titulo-scanner">ü§ñ Scanner IA Cestia</div>
+            <div class="titulo-scanner">?? Scanner IA Cestia</div>
             <div class="sub-scanner">Mire o codigo de barras para ler automatico ou tire foto do preco</div>
         </div>
 
@@ -53,14 +53,14 @@
         <div class="controle-container">
             <!-- TRAVA DE SEGURANCA: Abre exclusivamente a camera de gondola instantanea -->
             <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
-                üì∏ Foto do Produto e Preco
+                ?? Foto do Produto e Preco
             </label>
             <form id="form-ia-visao" action="/api/scan/" method="POST" enctype="multipart/form-data" style="display: none;">
                 {% csrf_token %}
                 <input type="file" id="camera-captura" name="imagem_gondola" accept="image/*" capture="environment" onchange="document.getElementById('form-ia-visao').submit();">
             </form>
             
-            <a href="/cesta/" class="btn-voltar">‚Üê Voltar para a Cesta</a>
+            <a href="/cesta/" class="btn-voltar">? Voltar para a Cesta</a>
         </div>
     </div>
 
@@ -105,12 +105,12 @@
                 Quagga.start();
             });
 
-            // GATILHO DE SUCESSO DO C√ìDIGO DE BARRAS AUTOM√ÅTICO
+            // GATILHO DE SUCESSO DO C”DIGO DE BARRAS AUTOM¡TICO
             Quagga.onDetected(function(resultado) {
                 const codigoEAN = resultado.codeResult.code;
                 if (codigoEAN) {
                     Quagga.stop();
-                    alert("‚ïë‚ñå‚ïë Codigo Detectado Automaticamente: " + codigoEAN);
+                    alert("¶¶¶ Codigo Detectado Automaticamente: " + codigoEAN);
                     window.location.href = "/api/scan/?ean=" + codigoEAN;
                 }
             });
