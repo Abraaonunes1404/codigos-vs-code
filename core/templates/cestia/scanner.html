@@ -9,18 +9,12 @@
         body { background-color: #121212; display: flex; justify-content: center; color: #FFF; }
         .celular-container { width: 100%; max-width: 410px; min-height: 100vh; background-color: #1A1A1A; position: relative; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
         
-        .topo-scanner { text-align: center; margin-top: 10px; }
-        .titulo-scanner { font-size: 18px; font-weight: bold; color: #FF6D00; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .sub-scanner { font-size: 11px; color: #AAA; margin-top: 4px; }
+        .topo-scanner { text-align: center; margin-top: 30px; }
+        .titulo-scanner { font-size: 20px; font-weight: bold; color: #FF6D00; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .sub-scanner { font-size: 12px; color: #AAA; margin-top: 6px; line-height: 16px; padding: 0 10px; }
 
-        /* AREA VISOR DA CAMERA REAL REESTRUTURADA */
-        .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 25px 0; border: 3px solid #FF6D00; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
-        
-        /* Container de injecao de video corrigido para o Quagga */
-        #interactive.viewport { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
-        canvas.drawingBuffer { display: none; }
-        
+        /* AREA VISOR DA CAMERA PREMIUM */
+        .visor-camera { width: 100%; height: 320px; background-color: #000; border-radius: 25px; margin: 30px 0; border: 3px solid #FF6D00; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255,109,0,0.15); }
         .linha-scanner { width: 85%; height: 2px; background-color: #00E5FF; position: absolute; z-index: 10; animation: escaneando 2.5s infinite linear; box-shadow: 0 0 10px #00E5FF; }
         
         @keyframes escaneando {
@@ -29,95 +23,40 @@
             100% { top: 15%; }
         }
 
-        /* BOTOES DE CONTROLE */
-        .controle-container { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px; z-index: 10; }
-        .btn-foto-produto { width: 100%; height: 52px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 26px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); text-align: center; line-height: 52px; }
+        /* BOTOES DE CONTROLE DO HARDWARE */
+        .controle-container { display: flex; flex-direction: column; gap: 14px; width: 100%; margin-bottom: 30px; z-index: 10; }
+        .btn-foto-produto { width: 100%; height: 54px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 27px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,109,0,0.3); text-align: center; line-height: 54px; text-decoration: none; }
         .btn-voltar { text-align: center; font-size: 13px; color: #AAA; text-decoration: none; font-weight: 600; margin-top: 5px; }
     </style>
-    <!-- IMPORTACAO OFICIAL DO SCRIPT DO LEITOR AUTOMATICO -->
-    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
     <div class="celular-container">
         <div class="topo-scanner">
-            <div class="titulo-scanner">Scanner IA Cestia</div>
-            <div class="sub-scanner">Mire o codigo de barras para ler automatico ou tire foto do preco</div>
+            <div class="titulo-scanner">🤖 Scanner Inteligente Cestia</div>
+            <div class="sub-scanner">Clique no botao abaixo para abrir a camera e capturar o preco ou codigo de barras na gondola</div>
         </div>
 
+        <!-- Interface Visual do Visor com a Linha de IA Varrendo -->
         <div class="visor-camera">
             <div class="linha-scanner"></div>
-            <div id="interactive" class="viewport"></div>
+            <span style="font-size: 50px; opacity: 0.25;">📷</span>
+            <p style="font-size: 11px; color: #555; margin-top: 12px; font-weight: 700; uppercase; tracking: 1px;">Sensor de Hardware Pronto</p>
         </div>
 
         <div class="controle-container">
-            <!-- TRAVA DE SEGURANCA: Abre exclusivamente a camera traseira do celular de g�ndola -->
+            <!-- SUA REGRA DE NEGÓCIO BLINDADA: Abre estritamente a camera traseira ao vivo do smartphone -->
             <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
-                Foto do Produto e Preco
+                📷 Foto do Produto
             </label>
             <form id="form-ia-visao" action="/api/scan/" method="POST" enctype="multipart/form-data" style="display: none;">
                 {% csrf_token %}
                 <input type="file" id="camera-captura" name="imagem_gondola" accept="image/*" capture="environment" onchange="document.getElementById('form-ia-visao').submit();">
             </form>
             
-            <a href="/cesta/" class="btn-voltar">Voltar para a Cesta</a>
+            <a href="/cesta/" class="btn-voltar">← Voltar para a Cesta</a>
         </div>
     </div>
-
-    <!-- SCRIPT ADAPTAVEL PC / SMARTPHONE COM RESET COMPLETO -->
-    <script>
-        function iniciarScannerAutomatico() {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector('#interactive'),
-                    constraints: {
-                        facingMode: "environment" // Prefer�ncia maxima: camera traseira do celular
-                    }
-                },
-                decoder: {
-                    readers: ["ean_reader", "ean_8_reader"]
-                },
-                locate: true
-            }, function(err) {
-                if (err) {
-                    console.log("Ambiente sem camera traseira detectado, acionando camera padrao...");
-                    
-                    // Fallback para PC: Altera o facingMode para aceitar webcams comuns frontais
-                    Quagga.init({
-                        inputStream: {
-                            name: "Live",
-                            type: "LiveStream",
-                            target: document.querySelector('#interactive')
-                        },
-                        decoder: { readers: ["ean_reader", "ean_8_reader"] }
-                    }, function(retryErr) {
-                        if (retryErr) {
-                            console.log("Nenhuma lente de video ativa.", retryErr);
-                            return;
-                        }
-                        Quagga.start();
-                    });
-                    return;
-                }
-                console.log("Leitor automatico inicializado com sucesso!");
-                Quagga.start();
-            });
-
-            // GATILHO DE SUCESSO AUTOMATICO
-            Quagga.onDetected(function(resultado) {
-                const codigoEAN = resultado.codeResult.code;
-                if (codigoEAN) {
-                    Quagga.stop();
-                    alert("Codigo Detectado: " + codigoEAN);
-                    window.location.href = "/api/scan/?ean=" + codigoEAN;
-                }
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', iniciarScannerAutomatico);
-    </script>
 
 </body>
 </html>
