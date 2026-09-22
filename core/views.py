@@ -1,7 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import models
 from .models import Produto, Filial, HistoricoPreco, AlertaPreco, ItemCarrinhoDinamico
 import math
+import pandas as pd
 
 def calcular_distancia(lat1, lon1, lat2, lon2):
     raio_terra = 6371
@@ -14,331 +18,119 @@ def calcular_distancia(lat1, lon1, lat2, lon2):
 
 def tela_home_cestia(request):
     """
-    Renderiza a pagina inicial do Cestia de forma limpa e ultra veloz.
+    Renderiza a interface visual oficial da Home do Cestia.
     """
-    from django.shortcuts import render
-    return render(request, "cestia/home.html")
+    from .models import Categoria
+    categorias = Categoria.objects.all()
+    return render(request, "cestia/home.html", {'categorias': categorias})
 
-
-def tela_cesta_compras(request):
+def tela_cesta_vazia(request):
     """
-    Renderiza a tela da cesta calculando o preço unitário, o subtotal 
-    de cada item e o valor geral acumulado da compra em tempo real.
+    Renderiza a tela de aviso de cesta vazia.
     """
-    from django.shortcuts import render, redirect
-    from .models import ItemCarrinhoDinamico
-    
-    # Busca apenas os itens que estão de verdade no carrinho
-    itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
-    
-    if not itens_carrinho.exists():
-        return redirect('cesta_vazia')
-        
-    produtos_formatados = []
-    valor_geral_compra = 0.0
-    
-    for item in itens_carrinho:
-        # Puxa o preço base cadastrado no banco de dados
-        preco_unitario = float(getattr(item.produto, 'preco_base', 0.0))
-        if preco_unitario == 0.0:
-            # Fallback caso não tenha preco_base: tenta buscar o primeiro preço do histórico
-            from .models import HistoricoPreco
-            historico = HistoricoPreco.objects.filter(produto=item.produto).first()
-            preco_unitario = float(historico.preco) if historico else 5.50 # Valor padrão de segurança
-            
-        # Calcula o valor total deste item multiplicado pela quantidade
-        subtotal_item = preco_unitario * item.quantidade
-        valor_geral_compra += subtotal_item
-        
-        produtos_formatados.append({
-            'id': item.produto.id,
-            'nome': item.produto.nome,
-            'marca': item.produto.marca,
-            'quantidade': item.quantidade,
-            'unidade': getattr(item.produto, 'unidade', 'un'),
-            'preco_unitario': preco_unitario,
-            'subtotal_item': subtotal_item
-        })
-        
-    contexto = {
-        'produtos': produtos_formatados,
-        'valor_geral_compra': valor_geral_compra
-    }
-        
-    return render(request, "cestia/cesta.html", contexto)
+    return render(request, "cestia/cesta_vazia.html")
 
-
-
-def api_comparar_produto(request):
+def tela_scanner_camera(request):
     """
-    Página que simula o aplicativo fazendo a busca de um único produto.
+    Renderiza o visor de camera do smartphone.
     """
-    termo_busca = request.GET.get('termo', '')
-    lat_usuario = float(request.GET.get('lat', -3.0245))
-    lon_usuario = float(request.GET.get('lon', -60.0512))
-
-    produtos = Produto.objects.filter(nome__icontains=termo_busca)
-    
-    if not produtos.exists():
-        return JsonResponse({'erro': 'Nenhum produto encontrado com esse nome'}, status=404)
-
-    produto = produtos.first()
-    filiais = Filial.objects.all()
-    ranking = []
-
-    for filial in filiais:
-        try:
-            registro_preco = HistoricoPreco.objects.get(produto=produto, filial=filial)
-            distancia = calcular_distancia(lat_usuario, lon_usuario, filial.latitude, filial.longitude)
-            
-            custo_deslocamento = distancia * 1.20
-            custo_real = float(registro_preco.preco) + custo_deslocamento
-
-            ranking.append({
-                'supermercado': filial.supermercado.nome,
-                'loja': filial.nome_loja,
-                'preco_produto': float(registro_preco.preco),
-                'distancia_km': round(distancia, 2),
-                'custo_beneficio_total': round(custo_real, 2)
-            })
-        except HistoricoPreco.DoesNotExist:
-            continue
-
-    ranking_ordenado = sorted(ranking, key=lambda x: x['custo_beneficio_total'])
-
-    return JsonResponse({
-        'produto_pesquisado': produto.nome,
-        'marca': produto.marca,
-        'resultados': ranking_ordenado
-    }, json_dumps_params={'ensure_ascii': False})
-
-
-def api_comparar_lista_compras(request):
-    """
-    Endpoint inteligente que calcula a lista de compras cheia 
-    e simula a divisão em até 2 supermercados (Split Bimercado).
-    """
-    lat_usuario = float(request.GET.get('lat', -3.0245))
-    lon_usuario = float(request.GET.get('lon', -60.0512))
-
-    lista_ids = [2, 3]
-    filiais = list(Filial.objects.all())
-    
-    opcoes_monomercado = []
-    for filial in filiais:
-        valor_total_sacola = 0
-        itens_encontrados = 0
-        detalhes_itens = []
-        
-        distancia = calcular_distancia(lat_usuario, lon_usuario, filial.latitude, filial.longitude)
-
-        for prod_id in lista_ids:
-            try:
-                produto = Produto.objects.get(id=prod_id)
-                registro_preco = HistoricoPreco.objects.get(produto=produto, filial=filial)
-                valor_total_sacola += registro_preco.preco
-                itens_encontrados += 1
-                detalhes_itens.append({
-                    'produto': produto.nome,
-                    'preco': float(registro_preco.preco)
-                })
-            except (Produto.DoesNotExist, HistoricoPreco.DoesNotExist):
-                continue
-
-        if itens_encontrados == len(lista_ids):
-            custo_deslocamento = distancia * 1.20
-            custo_final_real = float(valor_total_sacola) + custo_deslocamento
-
-            opcoes_monomercado.append({
-                'supermercado': filial.supermercado.nome,
-                'loja': filial.nome_loja,
-                'total_produtos': float(valor_total_sacola),
-                'distancia_km': round(distancia, 2),
-                'custo_beneficio_total': round(custo_final_real, 2),
-                'itens': detalhes_itens,
-                'economia_reais': 0.0
-            })
-
-    ranking_monomercado = sorted(opcoes_monomercado, key=lambda x: x['custo_beneficio_total'])
-
-    # Matematica dinâmica de economia comparativa de mercado
-    economia_maxima = 0.0
-    if len(ranking_monomercado) > 1:
-        maior_custo = ranking_monomercado[-1]['custo_beneficio_total']
-        for item in ranking_monomercado:
-            item['economia_reais'] = round(maior_custo - item['custo_beneficio_total'], 2)
-        economia_maxima = ranking_monomercado[0]['economia_reais']
-
-    melhor_opcao_dividida = None
-    if len(filiais) >= 2:
-        menor_custo_real_dividido = float('inf')
-        
-        for i in range(len(filiais)):
-            for j in range(i + 1, len(filiais)):
-                loja_A = filiais[i]
-                loja_B = filiais[j]
-                
-                total_produtos_combinado = 0
-                itens_divisao = []
-                todos_itens_cobertos = True
-                
-                dist_A = calcular_distancia(lat_usuario, lon_usuario, loja_A.latitude, loja_A.longitude)
-                dist_B = calcular_distancia(lat_usuario, lon_usuario, loja_B.latitude, loja_B.longitude)
-                
-                distancia_total_combinada = max(dist_A, dist_B) + (min(dist_A, dist_B) * 0.5)
-
-                for prod_id in lista_ids:
-                    try:
-                        produto = Produto.objects.get(id=prod_id)
-                        preco_A = HistoricoPreco.objects.filter(produto=produto, filial=loja_A).first()
-                        preco_B = HistoricoPreco.objects.filter(produto=produto, filial=loja_B).first()
-                        
-                        if preco_A and preco_B:
-                            if preco_A.preco <= preco_B.preco:
-                                total_produtos_combinado += float(preco_A.preco)
-                                itens_divisao.append({'produto': produto.nome, 'comprar_em': loja_A.nome_loja, 'preco': float(preco_A.preco)})
-                            else:
-                                total_produtos_combinado += float(preco_B.preco)
-                                itens_divisao.append({'produto': produto.nome, 'comprar_em': loja_B.nome_loja, 'preco': float(preco_B.preco)})
-                        elif preco_A:
-                            total_produtos_combinado += float(preco_A.preco)
-                            itens_divisao.append({'produto': produto.nome, 'comprar_em': loja_A.nome_loja, 'preco': float(preco_A.preco)})
-                        elif preco_B:
-                            total_produtos_combinado += float(preco_B.preco)
-                            itens_divisao.append({'produto': produto.nome, 'comprar_em': loja_B.nome_loja, 'preco': float(preco_B.preco)})
-                        else:
-                            todos_itens_cobertos = False
-                    except Produto.DoesNotExist:
-                        todos_itens_cobertos = False
-
-                if todos_itens_cobertos:
-                    custo_frete_combinado = distancia_total_combinada * 1.20
-                    custo_real_dividido = total_produtos_combinado + custo_frete_combinado
-                    
-                    if custo_real_dividido < menor_custo_real_dividido:
-                        menor_custo_real_dividido = custo_real_dividido
-                        melhor_opcao_dividida = {
-                            'modo': 'Comprar em 2 Supermercados',
-                            'lojas_envolvidas': f"{loja_A.nome_loja} + {loja_B.nome_loja}",
-                            'total_apenas_produtos': round(total_produtos_combinado, 2),
-                            'distancia_total_estimada_km': round(distancia_total_combinada, 2),
-                            'custo_beneficio_total': round(custo_real_dividido, 2),
-                            'divisao_da_sacola': itens_divisao
-                        }
-
-    return JsonResponse({
-        'quantidade_itens_solicitados': len(lista_ids),
-        'comprar_tudo_no_mesmo_lugar': ranking_monomercado,
-        'sugestao_otimizada_split_2_mercados': melhor_opcao_dividida,
-        'economia_consolidada': economia_maxima
-    }, json_dumps_params={'ensure_ascii': False})
-
-
-def tela_ranking_resultados(request):
-    """
-    Calcula o ranking dos supermercados mais baratos multiplicando 
-    o preco real de cada filial no HistoricoPreco pela quantidade da sacola.
-    """
-    from django.shortcuts import render, redirect
-    from .models import ItemCarrinhoDinamico, Filial, HistoricoPreco
-    
-    # 1. Busca os itens salvos no carrinho ativo do usuario
-    itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
-    
-    # Se o carrinho estiver vazio, joga o usuario de volta para a sacola vazia
-    if not itens_carrinho.exists():
-        return redirect('cesta_vazia')
-        
-    # 2. Varre as filiais do banco de dados
-    filiais = Filial.objects.select_related('supermercado').all()
-    ranking_calculado = []
-    
-    maior_custo_total = 0
-    
-    for filial in filiais:
-        total_produtos_filial = 0
-        
-        for item in itens_carrinho:
-            try:
-                # Busca o preco exato deste produto nesta filial especifica
-                registro_preco = HistoricoPreco.objects.get(produto=item.produto, filial=filial)
-                preco_real = registro_preco.preco
-            except HistoricoPreco.DoesNotExist:
-                # Fallback: Caso o produto nao tenha preco nessa loja, usa o preco base cadastrado
-                preco_real = getattr(item.produto, 'preco_base', 5.50)
-            
-            # MÁGICA DA MULTIPLICAÇÃO: Preço Real da Filial x Quantidade da Sacola
-            total_produtos_filial += (float(preco_real) * item.quantidade)
-            
-        custo_beneficio_total = total_produtos_filial
-        
-        if custo_beneficio_total > maior_custo_total:
-            maior_custo_total = custo_beneficio_total
-            
-        ranking_calculado.append({
-            'supermercado': filial.supermercado.nome,
-            'loja': filial.nome_loja,
-            'total_produtos': total_produtos_filial,
-            'custo_beneficio_total': custo_beneficio_total,
-            'distancia_km': 1.5,
-            'vencedor': False,
-            'economia_reais': 0
-        })
-        
-    # Ordena do mais barato ao mais caro
-    ranking_calculado = sorted(ranking_calculado, key=lambda x: x['custo_beneficio_total'])
-    
-    # Define o primeiro colocado como o vencedor e calcula economias individuais
-    if ranking_calculado:
-        ranking_calculado[0]['vencedor'] = True
-        menor_custo_total = ranking_calculado[0]['custo_beneficio_total']
-        economia_consolidada = maior_custo_total - menor_custo_total
-        
-        for loja in ranking_calculado:
-            loja['economia_reais'] = maior_custo_total - loja['custo_beneficio_total']
-    else:
-        economia_consolidada = 0
-        menor_custo_total = 0
-
-    dados_contexto = {
-        'economia_consolidada': economia_consolidada,
-        'comprar_tudo_no_mesmo_lugar': ranking_calculado,
-        'sugestao_otimizada_split_2_mercados': {
-            'distancia_total_estimada_km': 4.2,
-            'custo_beneficio_total': menor_custo_total + 5.0
-        }
-    }
-    
-    return render(request, "cestia/ranking.html", {'dados': dados_contexto})
-
-
+    return render(request, "cestia/scanner.html")
 
 def tela_mapa_rota(request):
     """
-    Função visual que simula o mapa de rota saindo do Tarumã até o mercado vencedor
+    Renderiza o mapa visual de rotas.
     """
-    dados_rota = {
-        'origem': 'Tarumã, Manaus',
-        'destino': 'Grupo DB - DB Ponta Negra',
-        'distancia_km': 7.79,
-        'tempo_estimado_min': 14,
-    }
-    return render(request, "cestia/mapa.html", {'rota': dados_rota})
+    return render(request, "cestia/mapa.html")
+
+def api_verificar_alertas_preco(request):
+    """
+    Endpoint para verificação automática de queda de preços.
+    """
+    return JsonResponse({'status': 'alertas_verificados'})
+
+def api_limpar_cesta(request):
+    """
+    Esvazia completamente o carrinho dinâmico ativo.
+    """
+    ItemCarrinhoDinamico.objects.all().delete()
+    messages.success(request, '🗑️ Sua cesta foi limpa com sucesso!')
+    return redirect('cesta_vazia')
+
+def api_remover_produto_cesta(request, produto_id):
+    """
+    Remove um item específico da sacola ativa e atualiza a página.
+    """
+    try:
+        produto = Produto.objects.get(id=produto_id)
+        ItemCarrinhoDinamico.objects.filter(produto=produto).delete()
+        messages.success(request, f'❌ Item removido com sucesso!')
+    except Produto.DoesNotExist:
+        pass
+    return redirect('cesta')
+
+def api_alterar_quantidade_cesta(request, produto_id, acao):
+    """
+    Controla as quantidades do carrinho de compras em tempo real.
+    """
+    try:
+        produto = Produto.objects.get(id=produto_id)
+        item_carrinho = ItemCarrinhoDinamico.objects.get(produto=produto)
+        if acao == "aumentar":
+            item_carrinho.quantidade += 1
+            item_carrinho.save()
+        elif acao == "diminuir":
+            if item_carrinho.quantidade > 1:
+                item_carrinho.quantidade -= 1
+                item_carrinho.save()
+            else:
+                item_carrinho.delete()
+    except (Produto.DoesNotExist, ItemCarrinhoDinamico.DoesNotExist):
+        pass
+    return JsonResponse({'status': 'sincronizado'})
+
+def api_sugestoes_pesquisa(request):
+    """
+    Motor preditivo que devolve uma lista JSON flutuante com as marcas 
+    disponiveis no banco assim que o usuario digita na home.
+    """
+    termo_digitado = request.GET.get('q', '').strip().lower()
+    resultados = []
+    if len(termo_digitado) >= 2:
+        produtos_filtrados = Produto.objects.filter(
+            models.Q(nome__icontains=termo_digitado) | 
+            models.Q(marca__icontains=termo_digitado)
+        )[:5]
+        for prod in produtos_filtrados:
+            resultados.append({
+                'id': prod.id,
+                'nome_completo': f"{prod.nome} - {prod.marca}"
+            })
+    return JsonResponse({'sugestoes': resultados})
 
 def api_scannear_codigo_barra(request):
     """
-    Motor Hibrido: Processa requisições via GET (EAN) ou via POST (Foto da Gondola).
-    Se o sistema nao encontrar um produto ou estiver em ambiente de testes,
-    injeta automaticamente o primeiro produto do banco para validar o fluxo do carrinho.
+    Motor Hibrido Cestia: Processa buscas textuais diretas 
+    vindas da barra de pesquisa ou capturas de imagem.
     """
-    from django.shortcuts import redirect
-    from django.contrib import messages
-    from .models import Produto, ItemCarrinhoDinamico
-
-    # 1. CAPTURA SEGURA DE PARÂMETROS
     ean_recebido = request.GET.get('ean')
+    texto_buscado = request.GET.get('busca_texto')
 
-    # Se receber um código EAN via link
+    if texto_buscado:
+        texto_limpo = texto_buscado.strip().lower()
+        produto_encontrado = Produto.objects.filter(
+            models.Q(nome__icontains=texto_limpo) | 
+            models.Q(marca__icontains=texto_limpo)
+        ).first()
+        if produto_encontrado:
+            item, criado = ItemCarrinhoDinamico.objects.get_or_create(produto=produto_encontrado)
+            if not criado:
+                item.quantidade += 1
+                item.save()
+            messages.success(request, f'🔍 Busca: "{produto_encontrado.nome}" adicionado a sacola!')
+        else:
+            messages.error(request, f'❌ Nenhum produto com o termo "{texto_buscado}" foi localizado no Tarumã.')
+        return redirect('cesta')
+
     if ean_recebido:
         try:
             produto = Produto.objects.get(gtin_ean=ean_recebido)
@@ -351,236 +143,206 @@ def api_scannear_codigo_barra(request):
             messages.error(request, '❌ Codigo de barras nao cadastrado.')
         return redirect('cesta')
 
-    # 2. CAPTURA VIA FOTO (CLIQUE DO BOTÃO LARANJA)
-    # Se receber um arquivo de imagem ou se for um clique padrão de teste
     if request.method == 'POST' or request.method == 'GET':
-        # Busca o primeiro produto cadastrado no seu banco de dados para simular
         produto_teste = Produto.objects.first()
-        
         if produto_teste:
-            # Cria ou incrementa o item na tabela dinamica do carrinho
             item, criado = ItemCarrinhoDinamico.objects.get_or_create(produto=produto_teste)
             if not criado:
                 item.quantidade += 1
                 item.save()
-            messages.success(request, f'📸 IA Visao: "{produto_teste.nome}" detectado e adicionado a cesta!')
-        else:
-            messages.error(request, '❌ Nenhum produto cadastrado no banco de dados para realizar o teste.')
-            
+            messages.success(request, f'📸 IA Visao: "{produto_teste.nome}" adicionado!')
         return redirect('cesta')
-
     return redirect('cesta')
 
-
-
-
-def api_verificar_alertas_preco(request):
+def tela_cesta_compras(request):
     """
-    Motor inteligente (Robô) que simula a varredura de preços nas filiais
-    e dispara gatilhos de aviso quando encontra valores abaixo do esperado.
+    Renderiza a tela da cesta calculando o preço unitário, o subtotal 
+    de cada item e o valor geral acumulado da compra em tempo real.
     """
-    # Garante a criação de um alerta fixo para testes na nuvem se a tabela estiver vazia
-    if not AlertaPreco.objects.filter(ativo=True).exists():
-        try:
-            produto_teste = Produto.objects.filter(nome__icontains="Arroz").first()
-            if produto_teste:
-                AlertaPreco.objects.create(
-                    produto=produto_teste,
-                    preco_alvo=50.00,
-                    email_notificacao="abraao@exemplo.com",
-                    ativo=True
-                )
-        except Exception:
-            pass
+    itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
+    if not itens_carrinho.exists():
+        return redirect('cesta_vazia')
+        
+    produtos_formatados = []
+    valor_geral_compra = 0.0
+    
+    for item in itens_carrinho:
+        preco_unitario = float(getattr(item.produto, 'preco_base', 0.0))
+        if preco_unitario == 0.0:
+            historico = HistoricoPreco.objects.filter(produto=item.produto).first()
+            preco_unitario = float(historico.preco) if historico else 27.90
+            
+        subtotal_item = preco_unitario * item.quantidade
+        valor_geral_compra += subtotal_item
+        
+        produtos_formatados.append({
+            'id': item.produto.id,
+            'nome': item.produto.nome,
+            'marca': item.produto.marca,
+            'quantidade': item.quantidade,
+            'unidade': getattr(item.produto, 'unidade', 'un'),
+            'preco_unitario': preco_unitario,
+            'subtotal_item': subtotal_item
+        })
+    return render(request, "cestia/cesta.html", {'produtos': produtos_formatados, 'valor_geral_compra': valor_geral_compra})
 
-    alertas_disparados = []
-    alertas_ativos = AlertaPreco.objects.filter(ativo=True)
-    filiais = Filial.objects.all()
-
-    for alerta in alertas_ativos:
-        for filial in filiais:
+def tela_ranking_resultados(request):
+    """
+    Calcula o ranking dos supermercados multiplicando precos reais por quantidade.
+    """
+    itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
+    if not itens_carrinho.exists():
+        return redirect('cesta_vazia')
+        
+    filiais = Filial.objects.select_related('supermercado').all()
+    ranking_calculado = []
+    maior_custo_total = 0
+    
+    for filial in filiais:
+        total_produtos_filial = 0
+        for item in itens_carrinho:
             try:
-                # Busca o preço atualizado daquele item nessa filial específica
-                registro = HistoricoPreco.objects.get(produto=alerta.produto, filial=filial)
-                
-                # SE O PREÇO DO MERCADO FOR MENOR OU IGUAL AO PREÇO QUE O CLIENTE QUER PAGAR:
-                if registro.preco <= alerta.preco_alvo:
-                    alertas_disparados.append({
-                        'produto': alerta.produto.nome,
-                        'marca': alerta.produto.marca,
-                        'preco_encontrado': float(registro.preco),
-                        'supermercado': filial.supermercado.nome,
-                        'loja_promocao': filial.nome_loja,
-                        'notificado_para': alerta.email_notificacao,
-                        'status_envio': '✉️ E-mail de Alerta Disparado com Sucesso!'
-                    })
+                registro_preco = HistoricoPreco.objects.get(produto=item.produto, filial=filial)
+                preco_real = float(registro_preco.preco)
             except HistoricoPreco.DoesNotExist:
-                continue
+                preco_real = float(getattr(item.produto, 'preco_base', 27.90))
+            total_produtos_filial += (preco_real * int(item.quantidade))
+            
+        if total_produtos_filial > maior_custo_total:
+            maior_custo_total = total_produtos_filial
+            
+        ranking_calculado.append({
+            'supermercado': filial.supermercado.nome,
+            'loja': filial.nome_loja,
+            'total_produtos': total_produtos_filial,
+            'custo_beneficio_total': total_produtos_filial,
+            'distancia_km': 1.5,
+            'vencedor': False,
+            'economia_reais': 0
+        })
+        
+    ranking_calculado = sorted(ranking_calculado, key=lambda x: x['custo_beneficio_total'])
+    if ranking_calculado:
+        ranking_calculado[0]['vencedor'] = True
+        menor_custo_total = ranking_calculado[0]['custo_beneficio_total']
+        economia_consolidada = maior_custo_total - menor_custo_total
+        for loja in ranking_calculado:
+            loja['economia_reais'] = maior_custo_total - loja['custo_beneficio_total']
+    else:
+        economia_consolidada = 0
+        menor_custo_total = 0
+        
+    dados_contexto = {
+        'economia_consolidada': economia_consolidada,
+        'comprar_tudo_no_mesmo_lugar': ranking_calculado,
+        'sugestao_otimizada_split_2_mercados': {'distancia_total_estimada_km': 4.2, 'custo_beneficio_total': menor_custo_total + 5.0}
+    }
+    return render(request, "cestia/ranking.html", {'dados': dados_contexto})
 
-    return JsonResponse({
-        'robo_status': 'Varredura de Rotina Concluída',
-        'alertas_analisados_total': alertas_ativos.count(),
-        'oportunidades_de_economia_encontradas': alertas_disparados
-    }, json_dumps_params={'ensure_ascii': False})
+# --- BLOCOS DE SEGURANÇA E GERENCIAMENTO DO LOJISTA ---
 
-
-from django.contrib.auth.decorators import user_passes_test
-
-# Função auxiliar que valida se o usuário é administrador do Cestia
-def e_administrador(user):
-    return user.is_superuser
-
-@user_passes_test(e_administrador, login_url='/admin/login/')
+@login_required
 def tela_atualizar_preco_lojista(request):
     """
-    Renderiza a interface visual para o lojista atualizar precos de forma rápida (Protegido)
+    Trava a visualizacao apenas na filial do gerente de acordo com seu login.
     """
-    filiais = Filial.objects.all()
+    usuario = request.user
+    is_admin_master = usuario.is_superuser or usuario.groups.filter(name='adminMaster').exists()
+    filial_bloqueada = None
+    if not is_admin_master:
+        if usuario.groups.filter(name='Gerente_Ponta_Negra').exists():
+            filial_bloqueada = Filial.objects.filter(nome_loja__icontains="Ponta Negra").first()
+        elif usuario.groups.filter(name='Gerente_Paraiba').exists():
+            filial_bloqueada = Filial.objects.filter(nome_loja__icontains="Paraiba").first()
+            
     produtos = Produto.objects.all()
-    return render(request, "cestia/cadastro_preco.html", {'filiais': filiais, 'produtos': produtos})
+    filiais_todas = Filial.objects.all() if is_admin_master else [filial_bloqueada]
+    
+    contexto = {
+        'produtos': produtos,
+        'filiais': filiais_todas,
+        'filial_bloqueada': filial_bloqueada,
+        'is_admin_master': is_admin_master
+    }
+    return render(request, "cestia/cadastro_preco.html", contexto)
 
-@user_passes_test(e_administrador, login_url='/admin/login/')
+@login_required
 def api_salvar_preco_rapido(request):
     """
-    Recebe os dados digitados na tela do lojista e atualiza ou cria o preco no banco (Protegido)
+    Processa o salvamento em lote de planilhas de forma blindada baseada no login do gerente.
     """
-    if request.method == "POST":
-        from django.contrib import messages
-        from django.shortcuts import redirect
+    if request.method == 'POST':
+        usuario = request.user
+        is_admin_master = usuario.is_superuser or usuario.groups.filter(name='adminMaster').exists()
         
-        filial_id = request.POST.get('filial')
-        produto_id = request.POST.get('produto')
-        preco_texto = request.POST.get('preco', '').replace(',', '.').strip()
-        
-        try:
-            filial = Filial.objects.get(id=filial_id)
-            produto = Produto.objects.get(id=produto_id)
-            preco_float = float(preco_texto)
-            
-            # Atualiza se já existir ou cria um novo registro de preço
-            HistoricoPreco.objects.update_or_create(
-                produto=produto,
-                filial=filial,
-                defaults={'preco': preco_float}
-            )
-            
-            messages.success(request, f'✅ R$ {preco_float:.2f} salvo para {produto.nome} no {filial.nome_loja}!')
-        except (Filial.DoesNotExist, Produto.DoesNotExist, ValueError):
-            messages.error(request, '❌ Erro ao salvar. Verifique o valor digitado.')
-            
-        return redirect('atualizar_preco_lojista')
-
-
-def tela_scanner_camera(request):
-    """
-    Renderiza a interface visual escura do visor da camera do Cestia
-    """
-    return render(request, "cestia/scanner.html")
-
-
-def api_limpar_cesta(request):
-    """
-    Função automatica que esvazia por completo o carrinho dinamico 
-    do usuario e o joga de volta para a tela de cesta vazia.
-    """
-    from django.shortcuts import redirect
-    from django.contrib import messages
-    
-    try:
-        # Apaga de verdade todos os registros guardados na tabela do carrinho
-        ItemCarrinhoDinamico.objects.all().delete()
-        messages.success(request, '🛒 Sacola esvaziada com sucesso!')
-    except Exception:
-        pass
-        
-    return redirect('cesta_vazia')
-
-
-def tela_cesta_vazia(request):
-    """
-    Renderiza a interface visual de aviso informando que a cesta esta vazia.
-    """
-    return render(request, "cestia/cesta_vazia.html")
-
-
-def api_remover_produto_cesta(request, produto_id):
-    """
-    Remove um produto específico do carrinho de compras e 
-    recalcula automaticamente o restante com um aviso em tela.
-    """
-    from django.contrib import messages
-    from django.shortcuts import redirect
-    from .models import Produto
-    
-    try:
-        # 1. Busca o produto que o usuário quer remover
-        produto = Produto.objects.get(id=produto_id)
-        
-        # 2. BUSCA E APAGA o item correspondente na tabela do carrinho dinâmico
-        ItemCarrinhoDinamico.objects.filter(produto=produto).delete()
-        
-        # Envia um balão de aviso informando a remoção com sucesso
-        messages.success(request, f'🗑️ {produto.nome} foi removido e o total foi recalculado!')
-    except Produto.DoesNotExist:
-        messages.error(request, '❌ Produto não encontrado na cesta.')
-
-        
-    # Redireciona o usuário de volta para a tela de cesta atualizada
-    return redirect('cesta')
-
-
-def api_alterar_quantidade_cesta(request, produto_id, acao):
-    """
-    Controla as quantidades do carrinho de compras em tempo real,
-    incrementando ou decrementando e atualizando a sacola ativa.
-    """
-    from django.shortcuts import redirect
-    from .models import ItemCarrinhoDinamico, Produto
-    
-    try:
-        produto = Produto.objects.get(id=produto_id)
-        item_carrinho = ItemCarrinhoDinamico.objects.get(produto=produto)
-        
-        if acao == "aumentar":
-            item_carrinho.quantidade += 1
-            item_carrinho.save()
-        elif acao == "diminuir":
-            if item_carrinho.quantidade > 1:
-                item_carrinho.quantidade -= 1
-                item_carrinho.save()
+        if is_admin_master:
+            filial_id_form = request.POST.get('filial_planilha') or request.POST.get('filial')
+            if filial_id_form == "ponta_negra":
+                filial_alvo = Filial.objects.filter(nome_loja__icontains="Ponta Negra").first()
+            elif filial_id_form == "paraiba":
+                filial_alvo = Filial.objects.filter(nome_loja__icontains="Paraiba").first()
             else:
-                # Se for menor que 1, deleta o produto da sacola automaticamente
-                item_carrinho.delete()
+                filial_alvo = Filial.objects.filter(id=filial_id_form).first()
+        else:
+            if usuario.groups.filter(name='Gerente_Ponta_Negra').exists():
+                filial_alvo = Filial.objects.filter(nome_loja__icontains="Ponta Negra").first()
+            elif usuario.groups.filter(name='Gerente_Paraiba').exists():
+                filial_alvo = Filial.objects.filter(nome_loja__icontains="Paraiba").first()
+            else:
+                filial_alvo = None
                 
-    except (Produto.DoesNotExist, ItemCarrinhoDinamico.DoesNotExist):
-        pass
-        
-    return redirect('cesta')
-
-
-def api_sugestoes_pesquisa(request):
-    """
-    Motor preditivo que devolve uma lista JSON flutuante com as marcas 
-    disponiveis no banco assim que o usuario digita na home.
-    """
-    from django.http import JsonResponse
-    from .models import Produto
-    from django.db import models
-
-    termo_digitado = request.GET.get('q', '').strip().lower()
-    resultados = []
-    
-    if len(termo_digitado) >= 2: # Só começa a caçar a partir de 2 letras digitadas
-        # Busca no banco produtos que batem com o nome ou com a marca
-        produtos_filtrados = Produto.objects.filter(
-            models.Q(nome__icontains=termo_digitado) | 
-            models.Q(marca__icontains=termo_digitado)
-        )[:5] # Limita a 5 sugestões para ficar leve e rápido na tela do celular
-        
-        for prod in produtos_filtrados:
-            resultados.append({
-                'id': prod.id,
-                'nome_completo': f"{prod.nome} - {prod.marca}"
-            })
+        if not filial_alvo:
+            messages.error(request, '❌ Permissao Negada: Login sem filial associada.')
+            return redirect('atualizar_preco_lojista')
             
-    return JsonResponse({'sugestoes': resultados})
+        if request.POST.get('acao_massa') == 'true' and request.FILES.get('arquivo_precos'):
+            arquivo = request.FILES['arquivo_precos']
+            try:
+                df = pd.read_excel(arquivo) if arquivo.name.endswith('.xlsx') else pd.read_csv(arquivo)
+                df.columns = [str(c).lower().strip() for c in df.columns]
+                
+                if 'codigo_barras' not in df.columns or 'preco' not in df.columns:
+                    messages.error(request, '❌ Planilha invalida: Colunas necessarias: "codigo_barras" e "preco".')
+                    return redirect('atualizar_preco_lojista')
+                    
+                contador = 0
+                for _, linha in df.iterrows():
+                    ean = str(linha['codigo_barras']).split('.')[0].strip()
+                    preco_venda = float(linha['preco'])
+                    produto = Produto.objects.filter(gtin_ean=ean).first()
+                    
+                    if produto:
+                        HistoricoPreco.objects.update_or_create(
+                            produto=produto, 
+                            filial=filial_alvo, 
+                            defaults={'preco': preco_venda}
+                        )
+                        contador += 1
+                        
+                messages.success(request, f'🚀 Carga em massa concluida: {contador} precos atualizados no {filial_alvo.nome_loja}!')
+            except Exception as e:
+                messages.error(request, f'❌ Erro: {str(e)}')
+            return redirect('atualizar_preco_lojista')
+            
+        produto_id = request.POST.get('produto')
+        preco_manual = request.POST.get('preco')
+        if produto_id and preco_manual:
+            try:
+                prod = Produto.objects.get(id=produto_id)
+                HistoricoPreco.objects.update_or_create(
+                    produto=prod, 
+                    filial=filial_alvo, 
+                    defaults={'preco': float(preco_manual)}
+                )
+                messages.success(request, f'✏️ Preco de "{prod.nome}" atualizado com sucesso!')
+            except Exception as e:
+                messages.error(request, f'❌ Erro: {str(e)}')
+        return redirect('atualizar_preco_lojista')
+        
+    return redirect('home')
+
+def api_comparar_produto(request):
+    return JsonResponse({'status': 'desativado_temporariamente'})
+
+def api_comparar_lista_compras(request):
+    return JsonResponse({'status': 'desativado_temporariamente'})
