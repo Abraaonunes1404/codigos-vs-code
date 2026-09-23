@@ -1,30 +1,49 @@
-{% extends "core/cesta.html" %}
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Lojista - Cestia</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #121212; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #FFF; }
+        .login-card { width: 100%; max-width: 360px; background-color: #1A1A1A; border-radius: 24px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #2A2A2A; text-align: center; }
+        .logo-login { font-size: 26px; font-weight: bold; color: #FF6D00; margin-bottom: 5px; }
+        .sub-login { font-size: 12px; color: #888; margin-bottom: 25px; }
+        .erro-alerta { background-color: #FFEBEE; color: #C62828; padding: 10px; border-radius: 12px; font-size: 13px; margin-bottom: 15px; font-weight: 600; text-align: center; }
+        .campo-grupo { display: flex; flex-direction: column; gap: 6px; text-align: left; margin-bottom: 16px; }
+        .campo-grupo label { font-size: 13px; color: #AAA; font-weight: 600; }
+        .campo-input { width: 100%; height: 46px; background-color: #2A2A2A; border: 1px solid #333; border-radius: 12px; padding-left: 12px; color: #FFF; font-size: 14px; outline: none; }
+        .campo-input:focus { border-color: #FF6D00; }
+        .btn-entrar { width: 100%; height: 48px; background: linear-gradient(135deg, #FF6D00, #FF9100); color: #FFF; border: none; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(255,109,0,0.2); }
+    </style>
+</head>
+<body>
 
-{% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card shadow-sm p-4">
-                <h3 class="mb-3 text-center text-primary">Login do Lojista</h3>
-                
-                {% if error %}
-                    <div class="alert alert-danger p-2 text-center">{{ error }}</div>
-                {% endif %}
+    <div class="login-card">
+        <div class="logo-login">Cestia Lojista</div>
+        <div class="sub-login">Entre para gerenciar os precos da sua filial</div>
 
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Usuário</label>
-                        <input type="text" name="username" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Senha</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Entrar</button>
-                </form>
+        {% if error %}
+            <div class="erro-alerta">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="campo-grupo">
+                <label>Usuário de Acesso</label>
+                <input type="text" name="username" class="campo-input" required placeholder="Ex: gerente_ponta_negra">
             </div>
-        </div>
+            
+            <div class="campo-grupo">
+                <label>Senha Secreta</label>
+                <input type="password" name="password" class="campo-input" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn-entrar">Entrar no Painel</button>
+        </form>
     </div>
-</div>
-{% endblock %}
+
+</body>
+</html>

@@ -10,10 +10,10 @@ from core.views import (
 )
 
 urlpatterns = [
-    # ROTA DE AUTOCOMPLETAR FLUTUANTE DE MARCAS:
+    # ROTA DE AUTOCOMPLETAR FLUTUANTE DE MARCAS
     path('api/sugestoes/', api_sugestoes_pesquisa, name='api_sugestoes'),
     
-    # ROTAS DO CONSUMIDOR (TELA INICIAL, CESTA E RESULTADOS):
+    # ROTAS DO CONSUMIDOR (TELA INICIAL, CESTA E RESULTADOS)
     path('', tela_home_cestia, name='home'),
     path('cesta/', tela_cesta_compras, name='cesta'),
     path('cesta-vazia/', tela_cesta_vazia, name='cesta_vazia'),
@@ -23,16 +23,16 @@ urlpatterns = [
     path('api/scan/', api_scannear_codigo_barra, name='api_scan'),
     path('limpar-cesta/', api_limpar_cesta, name='limpar_cesta'),
     
-    # SISTEMA DE QUANTIDADES E RECOMENTAÇÕES REATIVAS:
+    # SISTEMA DE QUANTIDADES E RECOMENDAÇÕES REATIVAS
     path('cesta/alterar/<int:produto_id>/<str:acao>/', api_alterar_quantidade_cesta, name='alterar_quantidade_cesta'),
     path('cesta/remover/<int:produto_id>/', api_remover_produto_cesta, name='remover_produto_cesta'),
     path('api/verificar-alertas/', api_verificar_alertas_preco, name='verificar_alertas'),
     
-    # NOVO MOTOR SEGURO DE AUTENTICAÇÃO E CARGA EM MASSA DO LOJISTA:
+    # NOVO MOTOR SEGURO DE AUTENTICAÇÃO E CARGA EM MASSA DO LOJISTA
     path('login/', login_lojista, name='login_lojista'),
     path('gerente-precos/', tela_atualizar_preco_lojista, name='atualizar_preco_lojista'),
     path('gerente-precos/salvar/', api_salvar_preco_rapido, name='api_salvar_preco'),
     
-    # BACKEND ADMINISTRATIVO DO DJANGO:
+    # BACKEND ADMINISTRATIVO DO DJANGO
     path('admin/', admin.site.urls),
 ]

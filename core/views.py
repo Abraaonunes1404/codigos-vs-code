@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.db import models
 from .models import Produto, Filial, HistoricoPreco, AlertaPreco, ItemCarrinhoDinamico
@@ -8,6 +9,9 @@ import math
 import pandas as pd
 
 def calcular_distancia(lat1, lon1, lat2, lon2):
+    """
+    Calcula a distancia em quilometros entre duas coordenadas usando a formula de Haversine.
+    """
     raio_terra = 6371
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
@@ -44,13 +48,13 @@ def tela_mapa_rota(request):
 
 def api_verificar_alertas_preco(request):
     """
-    Endpoint para verificação automática de queda de preços.
+    Endpoint para verificacao automatica de queda de precos.
     """
     return JsonResponse({'status': 'alertas_verificados'})
 
 def api_limpar_cesta(request):
     """
-    Esvazia completamente o carrinho dinâmico ativo.
+    Esvazia completamente o carrinho dinamico ativo.
     """
     ItemCarrinhoDinamico.objects.all().delete()
     messages.success(request, '🗑️ Sua cesta foi limpa com sucesso!')
@@ -58,7 +62,7 @@ def api_limpar_cesta(request):
 
 def api_remover_produto_cesta(request, produto_id):
     """
-    Remove um item específico da sacola ativa e atualiza a página.
+    Remove um item especifico da sacola activa e atualiza a pagina.
     """
     try:
         produto = Produto.objects.get(id=produto_id)
@@ -128,7 +132,7 @@ def api_scannear_codigo_barra(request):
                 item.save()
             messages.success(request, f'🔍 Busca: "{produto_encontrado.nome}" adicionado a sacola!')
         else:
-            messages.error(request, f'❌ Nenhum produto com o termo "{texto_buscado}" foi localizado no Tarumã.')
+            messages.error(request, f'❌ Nenhum produto com o termo "{texto_buscado}" foi localizado no Taruma.')
         return redirect('cesta')
 
     if ean_recebido:
@@ -156,7 +160,7 @@ def api_scannear_codigo_barra(request):
 
 def tela_cesta_compras(request):
     """
-    Renderiza a tela da cesta calculando o preço unitário, o subtotal 
+    Renderiza a tela da cesta calculando o preco unitario, o subtotal 
     de cada item e o valor geral acumulado da compra em tempo real.
     """
     itens_carrinho = ItemCarrinhoDinamico.objects.select_related('produto').all()
@@ -223,8 +227,8 @@ def tela_ranking_resultados(request):
         
     ranking_calculado = sorted(ranking_calculado, key=lambda x: x['custo_beneficio_total'])
     if ranking_calculado:
-        ranking_calculado[0]['vencedor'] = True
-        menor_custo_total = ranking_calculado[0]['custo_beneficio_total']
+        ranking_calculado['vencedor'] = True
+        menor_custo_total = ranking_calculado['custo_beneficio_total']
         economia_consolidada = maior_custo_total - menor_custo_total
         for loja in ranking_calculado:
             loja['economia_reais'] = maior_custo_total - loja['custo_beneficio_total']
@@ -239,16 +243,31 @@ def tela_ranking_resultados(request):
     }
     return render(request, "cestia/ranking.html", {'dados': dados_contexto})
 
-# --- BLOCOS DE SEGURANÇA E GERENCIAMENTO DO LOJISTA ---
+# --- SISTEMA DE AUTENTICAÇÃO E GERENCIAMENTO DO LOJISTA REAL ---
+
+def login_lojista(request):
+    """
+    View customizada que processa o login dos gerentes de forma segura.
+    """
+    error = None
+    if request.method == 'POST':
+        usuario_v = request.POST.get('username')
+        senha_v = request.POST.get('password')
+        user = authenticate(request, username=usuario_v, password=senha_v)
+        if user is not None:
+            login(request, user)
+            return redirect(request.GET.get('next', 'atualizar_preco_lojista'))
+        else:
+            error = "Usuário ou senha incorretos."
+    return render(request, 'cestia/login.html', {'error': error})
 
 @login_required
 def tela_atualizar_preco_lojista(request):
-    """
-    Trava a visualizacao apenas na filial do gerente de acordo com seu login.
-    """
+    """Trava a visualizacao apenas na filial do gerente de acordo com seu login."""
     usuario = request.user
     is_admin_master = usuario.is_superuser or usuario.groups.filter(name='adminMaster').exists()
     filial_bloqueada = None
+    
     if not is_admin_master:
         if usuario.groups.filter(name='Gerente_Ponta_Negra').exists():
             filial_bloqueada = Filial.objects.filter(nome_loja__icontains="Ponta Negra").first()
@@ -268,9 +287,7 @@ def tela_atualizar_preco_lojista(request):
 
 @login_required
 def api_salvar_preco_rapido(request):
-    """
-    Processa o salvamento em lote de planilhas de forma blindada baseada no login do gerente.
-    """
+    """Processa o salvamento em lote de planilhas de forma blindada baseada no login do gerente."""
     if request.method == 'POST':
         usuario = request.user
         is_admin_master = usuario.is_superuser or usuario.groups.filter(name='adminMaster').exists()
@@ -310,15 +327,13 @@ def api_salvar_preco_rapido(request):
                     ean = str(linha['codigo_barras']).split('.')[0].strip()
                     preco_venda = float(linha['preco'])
                     produto = Produto.objects.filter(gtin_ean=ean).first()
-                    
                     if produto:
                         HistoricoPreco.objects.update_or_create(
-                            produto=produto, 
-                            filial=filial_alvo, 
+                            produto=produto,
+                            filial=filial_alvo,
                             defaults={'preco': preco_venda}
                         )
                         contador += 1
-                        
                 messages.success(request, f'🚀 Carga em massa concluida: {contador} precos atualizados no {filial_alvo.nome_loja}!')
             except Exception as e:
                 messages.error(request, f'❌ Erro: {str(e)}')
@@ -330,8 +345,8 @@ def api_salvar_preco_rapido(request):
             try:
                 prod = Produto.objects.get(id=produto_id)
                 HistoricoPreco.objects.update_or_create(
-                    produto=prod, 
-                    filial=filial_alvo, 
+                    produto=prod,
+                    filial=filial_alvo,
                     defaults={'preco': float(preco_manual)}
                 )
                 messages.success(request, f'✏️ Preco de "{prod.nome}" atualizado com sucesso!')
@@ -346,29 +361,3 @@ def api_comparar_produto(request):
 
 def api_comparar_lista_compras(request):
     return JsonResponse({'status': 'desativado_temporariamente'})
-
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-
-def login_lojista(request):
-    error = None
-    if request.method == 'POST':
-        usuario_v = request.POST.get('username')
-        senha_v = request.POST.get('password')
-        
-        user = authenticate(request, username=usuario_v, password=senha_v)
-        if user is not None:
-            login(request, user)
-            # Redireciona de volta para a página que o lojista tentava acessar originalmente
-            return redirect(request.GET.get('next', 'atualizar_preco_lojista'))
-        else:
-            error = "Usuário ou senha incorretos."
-            
-    return render(request, 'login.html', {'error': error})
-
-# Garanta que a sua view original continue protegida
-@login_required
-def atualizar_preco_lojista(request):
-    return render(request, 'cadastro_preco.html')
