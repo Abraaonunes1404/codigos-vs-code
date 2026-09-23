@@ -47,7 +47,16 @@
             <!-- Elemento de video fixado esperando a transmissao -->
             <video id="video-ao-vivo" autoplay playsinline muted></video>
         </div>
-
+<div id="resultado-codigo" style="
+    min-height: 24px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #00E5FF;
+    margin-bottom: 12px;
+">
+    Aguardando código de barras...
+</div>
         <div class="controle-container">
             <!-- TRAVA DE SEGURANÇA: Abre a camera nativa em tela cheia para garantir a foto real da etiqueta -->
             <label for="camera-captura" class="btn-foto-produto" style="cursor: pointer;">
@@ -61,38 +70,41 @@
             <a href="/cesta/" class="btn-voltar">← Voltar para a Cesta</a>
         </div>
     </div>
+<script src="https://unpkg.com/@zxing/browser@0.2.1"></script>
 
-    <!-- SCRIPT DE ACENDIMENTO IMEDIATO DE VIDEO -->
-    <script>
-        async function forçarAberturaCamera() {
-            const elementoVideo = document.getElementById('video-ao-vivo');
-            
-            // Tenta abrir diretamente a câmera de trás do smartphone
-            try {
-                const streamTraseira = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" },
-                    audio: false
-                });
-                elementoVideo.srcObject = streamTraseira;
-                console.log("Câmera traseira de gôndola ativada com sucesso!");
-            } catch (erroTraseira) {
-                console.log("Ambiente sem câmera traseira rígida (PC), tentando webcam...");
-                // Fallback seguro: se estiver rodando no PC do Tarumã, abre a webcam padrão de primeira
-                try {
-                    const streamPadrao = await navigator.mediaDevices.getUserMedia({
-                        video: true,
-                        audio: false
-                    });
-                    elementoVideo.srcObject = streamPadrao;
-                } catch (erroGrave) {
-                    console.log("Nenhuma permissão de hardware concedida pelo navegador.", erroGrave);
+    <!-- LEITOR REAL DE CODIGO DE BARRAS COM ZXING -->
+<script>
+    async function iniciarScannerCodigo() {
+        const elementoVideo = document.getElementById('video-ao-vivo');
+        const resultadoCodigo = document.getElementById('resultado-codigo');
+
+        try {
+            const leitor = new ZXingBrowser.BrowserMultiFormatReader();
+
+            await leitor.decodeFromVideoDevice(
+                undefined,
+                elementoVideo,
+                (resultado, erro, controles) => {
+                    if (resultado) {
+                        const codigo = resultado.getText();
+
+                        resultadoCodigo.textContent = 'Código detectado: ' + codigo;
+
+                        console.log('CÓDIGO CESTIA:', codigo);
+                    }
                 }
-            }
-        }
+            );
 
-        // Inicializa o olho digital no instante exato em que a página abre na tela
-        window.addEventListener('DOMContentLoaded', forçarAberturaCamera);
-    </script>
+        } catch (erro) {
+            console.error('Erro ao iniciar scanner:', erro);
+
+            resultadoCodigo.textContent =
+                'Câmera indisponível neste dispositivo.';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', iniciarScannerCodigo);
+</script>
 
 </body>
 </html>
