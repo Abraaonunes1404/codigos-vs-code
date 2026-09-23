@@ -1,5 +1,4 @@
 from pathlib import Path
-from django.urls import reverse_lazy
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -76,5 +75,4 @@ MAILERS = {
     },
 }
 
-# CONTROLE DE SEGURANÇA SEGURO DE REDIRECIONAMENTO DE CONTA
-LOGIN_URL = reverse_lazy('login_lojista')
+LOGIN_URL = '/login/'
