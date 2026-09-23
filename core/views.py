@@ -147,15 +147,13 @@ def api_scannear_codigo_barra(request):
             messages.error(request, '❌ Codigo de barras nao cadastrado.')
         return redirect('cesta')
 
-    if request.method == 'POST' or request.method == 'GET':
-        produto_teste = Produto.objects.first()
-        if produto_teste:
-            item, criado = ItemCarrinhoDinamico.objects.get_or_create(produto=produto_teste)
-            if not criado:
-                item.quantidade += 1
-                item.save()
-            messages.success(request, f'📸 IA Visao: "{produto_teste.nome}" adicionado!')
+    if request.method == 'POST' and request.FILES.get('imagem_gondola'):
+        messages.info(
+            request,
+            '📸 Foto recebida com sucesso. A leitura por IA ainda será ativada.'
+        )
         return redirect('cesta')
+
     return redirect('cesta')
 
 def tela_cesta_compras(request):
