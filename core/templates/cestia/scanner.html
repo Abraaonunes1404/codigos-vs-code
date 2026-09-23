@@ -77,6 +77,7 @@
     async function iniciarScannerCodigo() {
         const elementoVideo = document.getElementById('video-ao-vivo');
         const resultadoCodigo = document.getElementById('resultado-codigo');
+        let leituraConcluida = false;
 
         try {
             const leitor = new ZXingBrowser.BrowserMultiFormatReader();
@@ -85,12 +86,22 @@
                 undefined,
                 elementoVideo,
                 (resultado, erro, controles) => {
-                    if (resultado) {
+                    if (resultado && !leituraConcluida) {
+                        leituraConcluida = true;
+
                         const codigo = resultado.getText();
 
-                        resultadoCodigo.textContent = 'Código detectado: ' + codigo;
+                        resultadoCodigo.textContent =
+                            'Código detectado: ' + codigo;
 
                         console.log('CÓDIGO CESTIA:', codigo);
+
+                        if (controles) {
+                            controles.stop();
+                        }
+
+                        window.location.href =
+                            '/api/scan/?ean=' + encodeURIComponent(codigo);
                     }
                 }
             );
@@ -103,7 +114,10 @@
         }
     }
 
-    window.addEventListener('DOMContentLoaded', iniciarScannerCodigo);
+    window.addEventListener(
+        'DOMContentLoaded',
+        iniciarScannerCodigo
+    );
 </script>
 
 </body>
