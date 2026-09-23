@@ -17,10 +17,39 @@
 </head>
 <body>
     <div class="celular-container">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="
+                    width: 100%;
+                    max-width: 330px;
+                    background-color: #E3F2FD;
+                    border-left: 4px solid #1976D2;
+                    color: #0D47A1;
+                    padding: 12px;
+                    border-radius: 12px;
+                    margin-bottom: 20px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    text-align: left;
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <div class="icone-sacola">🛒💨</div>
+
         <h3 class="titulo-aviso">Sua cesta esta vazia</h3>
-        <p class="texto-aviso">Voce removeu todos os produtos. Que tal escanear novos itens na gondola para ver a mágica da economia?</p>
-        <a href="/scanner-cestia/" class="btn-adicionar">📸 ESCANEAR PRODUTOS AGORA</a>
+
+        <p class="texto-aviso">
+            Voce removeu todos os produtos. Que tal escanear novos itens na gondola para ver a mágica da economia?
+        </p>
+
+        <a href="/scanner-cestia/" class="btn-adicionar">
+            📸 ESCANEAR PRODUTOS AGORA
+        </a>
+
     </div>
 </body>
 </html>
