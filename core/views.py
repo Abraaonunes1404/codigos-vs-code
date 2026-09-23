@@ -227,8 +227,8 @@ def tela_ranking_resultados(request):
         
     ranking_calculado = sorted(ranking_calculado, key=lambda x: x['custo_beneficio_total'])
     if ranking_calculado:
-        ranking_calculado['vencedor'] = True
-        menor_custo_total = ranking_calculado['custo_beneficio_total']
+        ranking_calculado[0]['vencedor'] = True
+        menor_custo_total = ranking_calculado[0]['custo_beneficio_total']
         economia_consolidada = maior_custo_total - menor_custo_total
         for loja in ranking_calculado:
             loja['economia_reais'] = maior_custo_total - loja['custo_beneficio_total']
