@@ -304,14 +304,62 @@ REGRAS:
                 and ean_foto_limpo == ean_informado_limpo
             )
 
-            aprovado_cestia = (
-                ean_compativel
-                and resultado.get('produto_compativel') is True
-                and resultado.get('preco_compativel') is True
+            produto_compativel = (
+                resultado.get('produto_compativel') is True
             )
+
+            preco_compativel = (
+                resultado.get('preco_compativel') is True
+            )
+
+            ean_legivel = (
+                resultado.get('ean_legivel') is True
+                and bool(ean_foto_limpo)
+            )
+
+            if not produto_compativel:
+                status_validacao = 'rejeitado'
+                aprovado_cestia = False
+                mensagem_cestia = (
+                    'O produto da etiqueta não corresponde '
+                    'ao produto informado.'
+                )
+
+            elif not preco_compativel:
+                status_validacao = 'rejeitado'
+                aprovado_cestia = False
+                mensagem_cestia = (
+                    'O preço encontrado na etiqueta não corresponde '
+                    'ao preço informado.'
+                )
+
+            elif not ean_legivel:
+                status_validacao = 'nova_foto_necessaria'
+                aprovado_cestia = False
+                mensagem_cestia = (
+                    'Não conseguimos confirmar o código de barras. '
+                    'Aproxime a câmera da etiqueta e fotografe novamente.'
+                )
+
+            elif not ean_compativel:
+                status_validacao = 'rejeitado'
+                aprovado_cestia = False
+                mensagem_cestia = (
+                    'O código de barras da etiqueta é diferente '
+                    'do produto escaneado.'
+                )
+
+            else:
+                status_validacao = 'aprovado'
+                aprovado_cestia = True
+                mensagem_cestia = (
+                    'Produto, preço e código de barras confirmados.'
+                )
 
             resultado['ean_informado'] = ean
             resultado['ean_compativel'] = ean_compativel
+            resultado['status_validacao'] = status_validacao
+            resultado['mensagem_cestia'] = mensagem_cestia
             resultado['aprovado_cestia'] = aprovado_cestia
 
             return JsonResponse({
