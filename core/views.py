@@ -5,8 +5,12 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.db import models
 from .models import Produto, Filial, HistoricoPreco, AlertaPreco, ItemCarrinhoDinamico
+
 import math
 import pandas as pd
+import base64
+from openai import OpenAI
+import json
 
 def calcular_distancia(lat1, lon1, lat2, lon2):
     """
@@ -138,14 +142,189 @@ def tela_comprovar_preco_produto(request):
         preco = request.POST.get('preco', '').strip()
         foto = request.FILES.get('foto_etiqueta')
 
-        return JsonResponse({
-            'recebido': True,
-            'ean': ean,
-            'nome': nome,
-            'marca': marca,
-            'preco': preco,
-            'foto_recebida': bool(foto),
-        })
+        if not foto:
+            return JsonResponse({
+                'erro': 'Nenhuma foto foi enviada.'
+            }, status=400)
+
+        tipo_imagem = foto.content_type or 'image/jpeg'
+
+        imagem_base64 = base64.b64encode(
+            foto.read()
+        ).decode('utf-8')
+
+        imagem_data_url = (
+            f'data:{tipo_imagem};base64,{imagem_base64}'
+        )
+
+        prompt = f"""
+Você é o sistema de leitura de etiquetas do Cestia.
+
+DADOS INFORMADOS:
+
+EAN escaneado: {ean}
+Produto: {nome}
+Marca: {marca}
+Preço informado: R$ {preco}
+
+Analise cuidadosamente a fotografia.
+
+REGRAS:
+
+- Leia somente informações realmente visíveis.
+- Nunca invente ou complete um EAN.
+- Se o código de barras estiver visível, tente ler todos os dígitos.
+- Diferencie preço da unidade de preço por litro, kg ou outra medida.
+- O preço principal do produto deve ser tratado como preço da unidade.
+- Compare semanticamente o produto da etiqueta com o produto informado.
+- Compare o preço da unidade da etiqueta com o preço informado.
+"""
+
+        try:
+            client = OpenAI()
+
+            resposta = client.responses.create(
+                model='gpt-5.6-luna',
+
+                input=[
+                    {
+                        'role': 'user',
+                        'content': [
+                            {
+                                'type': 'input_text',
+                                'text': prompt,
+                            },
+                            {
+                                'type': 'input_image',
+                                'image_url': imagem_data_url,
+                            },
+                        ],
+                    }
+                ],
+
+                text={
+                    'format': {
+                        'type': 'json_schema',
+                        'name': 'validacao_etiqueta_cestia',
+                        'strict': True,
+
+                        'schema': {
+                            'type': 'object',
+
+                            'properties': {
+                                'ean_encontrado': {
+                                    'type': ['string', 'null']
+                                },
+
+                                'ean_legivel': {
+                                    'type': 'boolean'
+                                },
+
+                                'produto_encontrado': {
+                                    'type': ['string', 'null']
+                                },
+
+                                'marca_encontrada': {
+                                    'type': ['string', 'null']
+                                },
+
+                                'peso_volume_encontrado': {
+                                    'type': ['string', 'null']
+                                },
+
+                                'preco_unidade_encontrado': {
+                                    'type': ['number', 'null']
+                                },
+
+                                'preco_referencia_encontrado': {
+                                    'type': ['number', 'null']
+                                },
+
+                                'referencia_preco': {
+                                    'type': ['string', 'null']
+                                },
+
+                                'produto_compativel': {
+                                    'type': 'boolean'
+                                },
+
+                                'preco_compativel': {
+                                    'type': 'boolean'
+                                },
+
+                                'motivo': {
+                                    'type': 'string'
+                                },
+                            },
+
+                            'required': [
+                                'ean_encontrado',
+                                'ean_legivel',
+                                'produto_encontrado',
+                                'marca_encontrada',
+                                'peso_volume_encontrado',
+                                'preco_unidade_encontrado',
+                                'preco_referencia_encontrado',
+                                'referencia_preco',
+                                'produto_compativel',
+                                'preco_compativel',
+                                'motivo',
+                            ],
+
+                            'additionalProperties': False,
+                        },
+                    }
+                },
+            )
+
+            resultado = json.loads(
+                resposta.output_text
+            )
+
+            ean_informado_limpo = ''.join(
+                numero for numero in ean
+                if numero.isdigit()
+            )
+
+            ean_foto = resultado.get(
+                'ean_encontrado'
+            )
+
+            if ean_foto:
+                ean_foto_limpo = ''.join(
+                    numero for numero in ean_foto
+                    if numero.isdigit()
+                )
+            else:
+                ean_foto_limpo = ''
+
+            ean_compativel = (
+                resultado.get('ean_legivel') is True
+                and bool(ean_foto_limpo)
+                and ean_foto_limpo == ean_informado_limpo
+            )
+
+            aprovado_cestia = (
+                ean_compativel
+                and resultado.get('produto_compativel') is True
+                and resultado.get('preco_compativel') is True
+            )
+
+            resultado['ean_informado'] = ean
+            resultado['ean_compativel'] = ean_compativel
+            resultado['aprovado_cestia'] = aprovado_cestia
+
+            return JsonResponse({
+                'recebido': True,
+                'resultado_ia': resultado,
+            })
+
+        except Exception as erro:
+            return JsonResponse({
+                'recebido': True,
+                'foto_recebida': True,
+                'erro_ia': str(erro),
+            }, status=502)
 
     ean = request.GET.get('ean', '').strip()
     nome = request.GET.get('nome', '').strip()
