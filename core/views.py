@@ -362,10 +362,11 @@ REGRAS:
             resultado['mensagem_cestia'] = mensagem_cestia
             resultado['aprovado_cestia'] = aprovado_cestia
 
-            return JsonResponse({
-                'recebido': True,
-                'resultado_ia': resultado,
-            })
+            return render(
+                request,
+                'cestia/resultado_validacao_preco.html',
+                resultado
+            )
 
         except Exception as erro:
             return JsonResponse({
