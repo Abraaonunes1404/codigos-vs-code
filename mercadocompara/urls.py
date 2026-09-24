@@ -3,6 +3,7 @@ from django.urls import path
 from core.views import (
     tela_produto_nao_encontrado,
     tela_cadastro_produto_cliente,
+    tela_comprovar_preco_produto,
     tela_home_cestia,
     tela_cesta_compras,
     tela_ranking_resultados,
@@ -41,6 +42,11 @@ urlpatterns = [
         'cadastrar-produto/',
         tela_cadastro_produto_cliente,
         name='cadastro_produto_cliente'
+    ),
+    path(
+        'comprovar-preco/',
+        tela_comprovar_preco_produto,
+        name='comprovar_preco_produto'
     ),
     path('api/scan/', api_scannear_codigo_barra, name='api_scan'),
     path('limpar-cesta/', api_limpar_cesta, name='limpar_cesta'),

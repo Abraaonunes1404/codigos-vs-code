@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Comprovar preço - Cestia</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+        }
+
+        .celular-container {
+            width: 100%;
+            max-width: 410px;
+            min-height: 100vh;
+            background-color: #1A1A1A;
+            padding: 30px 20px;
+        }
+
+        .titulo {
+            color: #FF6D00;
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitulo {
+            color: #AAAAAA;
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .produto-box {
+            background-color: #242424;
+            border: 1px solid #444444;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 22px;
+        }
+
+        .produto-nome {
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .produto-marca {
+            color: #AAAAAA;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .produto-ean {
+            color: #00E5FF;
+            font-size: 12px;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        .campo label {
+            display: block;
+            color: #CCCCCC;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .campo input[type="number"] {
+            width: 100%;
+            min-height: 54px;
+            background-color: #242424;
+            border: 1px solid #444444;
+            border-radius: 14px;
+            color: #FFFFFF;
+            padding: 0 15px;
+            font-size: 20px;
+            outline: none;
+        }
+
+        .campo input[type="number"]:focus {
+            border-color: #FF6D00;
+        }
+
+        .aviso {
+            background-color: #242424;
+            border-left: 4px solid #FF6D00;
+            border-radius: 12px;
+            padding: 14px;
+            color: #CCCCCC;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        .btn-foto {
+            width: 100%;
+            min-height: 54px;
+            border-radius: 27px;
+            background-color: #242424;
+            border: 1px solid #00E5FF;
+            color: #00E5FF;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        #foto-etiqueta {
+            display: none;
+        }
+
+        .status-foto {
+            color: #AAAAAA;
+            font-size: 12px;
+            text-align: center;
+            min-height: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn-confirmar {
+            width: 100%;
+            min-height: 54px;
+            border: none;
+            border-radius: 27px;
+            background: linear-gradient(135deg, #FF6D00, #FF9100);
+            color: #FFFFFF;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-cancelar {
+            width: 100%;
+            min-height: 52px;
+            border: 1px solid #555555;
+            border-radius: 26px;
+            color: #CCCCCC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="celular-container">
+
+        <h1 class="titulo">
+            Comprovar preço
+        </h1>
+
+        <p class="subtitulo">
+            Informe o preço encontrado e fotografe a etiqueta
+            para que o Cestia possa validar a informação.
+        </p>
+
+        <div class="produto-box">
+
+            <div class="produto-nome">
+                {{ nome }}
+            </div>
+
+            <div class="produto-marca">
+                {{ marca }}
+            </div>
+
+            <div class="produto-ean">
+                EAN: {{ ean }}
+            </div>
+
+        </div>
+
+        <div class="campo">
+
+            <label for="preco">
+                PREÇO ENCONTRADO
+            </label>
+
+            <input
+                type="number"
+                id="preco"
+                name="preco"
+                step="0.01"
+                min="0.01"
+                placeholder="0,00"
+                inputmode="decimal"
+                required
+            >
+
+        </div>
+
+        <div class="aviso">
+            📷 A foto da etiqueta é obrigatória para comprovar
+            que o produto está sendo vendido pelo preço informado.
+        </div>
+
+        <label
+            for="foto-etiqueta"
+            class="btn-foto"
+        >
+            📷 Fotografar etiqueta de preço
+        </label>
+
+        <input
+            type="file"
+            id="foto-etiqueta"
+            name="foto_etiqueta"
+            accept="image/*"
+            capture="environment"
+        >
+
+        <div
+            id="status-foto"
+            class="status-foto"
+        >
+            Nenhuma foto capturada.
+        </div>
+
+        <button
+            type="button"
+            class="btn-confirmar"
+        >
+            Validar preço
+        </button>
+
+        <a
+            href="/scanner-cestia/"
+            class="btn-cancelar"
+        >
+            Cancelar e escanear outro
+        </a>
+
+    </div>
+
+    <script>
+        const fotoEtiqueta =
+            document.getElementById('foto-etiqueta');
+
+        const statusFoto =
+            document.getElementById('status-foto');
+
+        fotoEtiqueta.addEventListener('change', function () {
+            if (fotoEtiqueta.files.length > 0) {
+                statusFoto.textContent =
+                    '✓ Foto capturada. Pronta para validação.';
+            } else {
+                statusFoto.textContent =
+                    'Nenhuma foto capturada.';
+            }
+        });
+    </script>
+
+</body>
+</html>

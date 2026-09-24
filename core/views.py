@@ -130,6 +130,21 @@ def tela_cadastro_produto_cliente(request):
         {'ean': ean}
     )
 
+def tela_comprovar_preco_produto(request):
+    ean = request.GET.get('ean', '').strip()
+    nome = request.GET.get('nome', '').strip()
+    marca = request.GET.get('marca', '').strip()
+
+    return render(
+        request,
+        'cestia/comprovar_preco_produto.html',
+        {
+            'ean': ean,
+            'nome': nome,
+            'marca': marca,
+        }
+    )
+
 
 def api_scannear_codigo_barra(request):
     """
