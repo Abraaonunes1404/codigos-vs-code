@@ -238,19 +238,39 @@
                 que o produto está sendo vendido pelo preço informado.
             </div>
 
-            <label
-                for="foto-etiqueta"
+            <button
+                type="button"
+                id="btn-camera"
                 class="btn-foto"
             >
-                📷 Fotografar etiqueta de preço
-            </label>
+                📷 Abrir câmera traseira
+            </button>
+
+            <video
+                id="camera-preview"
+                autoplay
+                playsinline
+                muted
+                style="
+                    display: none;
+                    width: 100%;
+                    border-radius: 16px;
+                    margin-bottom: 15px;
+                    background: #000;
+                "
+            ></video>
+
+            <canvas
+                id="camera-canvas"
+                style="display: none;"
+            ></canvas>
 
             <input
                 type="file"
                 id="foto-etiqueta"
                 name="foto_etiqueta"
                 accept="image/*"
-                capture="environment"
+                style="display: none;"
                 required
             >
 
@@ -280,21 +300,180 @@
     </div>
 
     <script>
+        const btnCamera =
+            document.getElementById('btn-camera');
+
+        const video =
+            document.getElementById('camera-preview');
+
+        const canvas =
+            document.getElementById('camera-canvas');
+
         const fotoEtiqueta =
             document.getElementById('foto-etiqueta');
 
         const statusFoto =
             document.getElementById('status-foto');
 
-        fotoEtiqueta.addEventListener('change', function () {
-            if (fotoEtiqueta.files.length > 0) {
+        let cameraStream = null;
+
+        async function abrirCameraTraseira() {
+            if (
+                !navigator.mediaDevices ||
+                !navigator.mediaDevices.getUserMedia
+            ) {
                 statusFoto.textContent =
-                    '✓ Foto capturada. Pronta para validação.';
-            } else {
-                statusFoto.textContent =
-                    'Nenhuma foto capturada.';
+                    '❌ Este navegador não permite acesso à câmera.';
+                return;
             }
-        });
+
+            try {
+                try {
+                    cameraStream =
+                        await navigator.mediaDevices.getUserMedia({
+                            video: {
+                                facingMode: {
+                                    exact: 'environment'
+                                }
+                            },
+                            audio: false
+                        });
+
+                } catch (erroCameraExata) {
+                    cameraStream =
+                        await navigator.mediaDevices.getUserMedia({
+                            video: {
+                                facingMode: {
+                                    ideal: 'environment'
+                                }
+                            },
+                            audio: false
+                        });
+                }
+
+                video.srcObject = cameraStream;
+                video.style.display = 'block';
+
+                await video.play();
+
+                btnCamera.textContent =
+                    '📸 Capturar foto';
+
+                statusFoto.textContent =
+                    'Câmera traseira ativa. Posicione a etiqueta.';
+
+            } catch (erro) {
+                console.error(
+                    'Erro ao abrir câmera:',
+                    erro
+                );
+
+                statusFoto.textContent =
+                    '❌ Não foi possível abrir a câmera traseira.';
+            }
+        }
+
+        function pararCamera() {
+            if (!cameraStream) {
+                return;
+            }
+
+            cameraStream
+                .getTracks()
+                .forEach(function (track) {
+                    track.stop();
+                });
+
+            cameraStream = null;
+            video.srcObject = null;
+        }
+
+        function capturarFoto() {
+            if (
+                !cameraStream ||
+                !video.videoWidth ||
+                !video.videoHeight
+            ) {
+                statusFoto.textContent =
+                    '❌ A câmera ainda não está pronta.';
+                return;
+            }
+
+            canvas.width =
+                video.videoWidth;
+
+            canvas.height =
+                video.videoHeight;
+
+            const contexto =
+                canvas.getContext('2d');
+
+            contexto.drawImage(
+                video,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            canvas.toBlob(
+                function (blob) {
+                    if (!blob) {
+                        statusFoto.textContent =
+                            '❌ Não foi possível capturar a foto.';
+                        return;
+                    }
+
+                    const arquivo =
+                        new File(
+                            [blob],
+                            'etiqueta-cestia.jpg',
+                            {
+                                type: 'image/jpeg'
+                            }
+                        );
+
+                    const transferencia =
+                        new DataTransfer();
+
+                    transferencia.items.add(
+                        arquivo
+                    );
+
+                    fotoEtiqueta.files =
+                        transferencia.files;
+
+                    pararCamera();
+
+                    video.style.display =
+                        'none';
+
+                    btnCamera.textContent =
+                        '📷 Fotografar novamente';
+
+                    statusFoto.textContent =
+                        '✓ Foto capturada. Pronta para validação.';
+                },
+                'image/jpeg',
+                0.92
+            );
+        }
+
+        btnCamera.addEventListener(
+            'click',
+            async function () {
+                if (cameraStream) {
+                    capturarFoto();
+                } else {
+                    await abrirCameraTraseira();
+                }
+            }
+        );
+
+        window.addEventListener(
+            'beforeunload',
+            pararCamera
+        );
     </script>
 
 </body>
