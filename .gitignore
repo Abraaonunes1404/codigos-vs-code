@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Ambientes virtuais
+.venv/
+.venv-1/
+venv/
+
+# Banco local
+db.sqlite3
+db.sqlite3-journal
+
+# Arquivos de ambiente e segredos
+.env
+.env.*
+
+# Arquivos enviados localmente
+media/
+
+# Static coletado pelo Django
+staticfiles/
+
+# VS Code
+.vscode/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

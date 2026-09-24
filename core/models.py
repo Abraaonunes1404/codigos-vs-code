@@ -5,7 +5,11 @@ class Categoria(models.Model):
     def __str__(self): return self.nome
 
 class Produto(models.Model):
-    gtin_ean = models.CharField(max_length=13, unique=True, verbose_name="Código de Barras")
+    gtin_ean = models.CharField(
+        max_length=14,
+        unique=True,
+        verbose_name="Código de Barras"
+    )
     nome = models.CharField(max_length=255)
     marca = models.CharField(max_length=100)
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
