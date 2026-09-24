@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar produto - Cestia</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+        }
+
+        .celular-container {
+            width: 100%;
+            max-width: 410px;
+            min-height: 100vh;
+            background-color: #1A1A1A;
+            padding: 30px 20px;
+        }
+
+        .titulo {
+            color: #FF6D00;
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+            color: #AAAAAA;
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        .campo {
+            margin-bottom: 18px;
+        }
+
+        .campo label {
+            display: block;
+            color: #CCCCCC;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .campo input {
+            width: 100%;
+            min-height: 50px;
+            border: 1px solid #444444;
+            border-radius: 14px;
+            background-color: #242424;
+            color: #FFFFFF;
+            padding: 0 14px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .campo input:focus {
+            border-color: #FF6D00;
+        }
+
+        .campo input[readonly] {
+            color: #00E5FF;
+            font-weight: bold;
+        }
+
+        .btn-continuar,
+        .btn-cancelar {
+            width: 100%;
+            min-height: 52px;
+            border-radius: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .btn-continuar {
+            border: none;
+            background: linear-gradient(135deg, #FF6D00, #FF9100);
+            color: #FFFFFF;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+
+        .btn-cancelar {
+            border: 1px solid #555555;
+            color: #CCCCCC;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="celular-container">
+
+        <h1 class="titulo">
+            Cadastrar produto
+        </h1>
+
+        <p class="subtitulo">
+            Ajude o Cestia a identificar este produto.
+            O preço e a foto serão solicitados na próxima etapa.
+        </p>
+
+        <form method="GET" action="#">
+
+            <div class="campo">
+                <label for="ean">
+                    CÓDIGO DE BARRAS
+                </label>
+
+                <input
+                    type="text"
+                    id="ean"
+                    name="ean"
+                    value="{{ ean }}"
+                    readonly
+                >
+            </div>
+
+            <div class="campo">
+                <label for="nome">
+                    NOME DO PRODUTO
+                </label>
+
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    placeholder="Ex.: Café Pilão 500g"
+                    required
+                >
+            </div>
+
+            <div class="campo">
+                <label for="marca">
+                    MARCA
+                </label>
+
+                <input
+                    type="text"
+                    id="marca"
+                    name="marca"
+                    placeholder="Ex.: Pilão"
+                    required
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="btn-continuar"
+            >
+                Continuar
+            </button>
+
+        </form>
+
+        <a
+            href="/scanner-cestia/"
+            class="btn-cancelar"
+        >
+            Cancelar e escanear outro
+        </a>
+
+    </div>
+
+</body>
+</html>

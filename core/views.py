@@ -120,6 +120,17 @@ def tela_produto_nao_encontrado(request):
         {'ean': ean}
     )
 
+
+def tela_cadastro_produto_cliente(request):
+    ean = request.GET.get('ean', '').strip()
+
+    return render(
+        request,
+        'cestia/cadastro_produto_cliente.html',
+        {'ean': ean}
+    )
+
+
 def api_scannear_codigo_barra(request):
     """
     Motor Hibrido Cestia: Processa buscas textuais diretas

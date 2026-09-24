@@ -1,11 +1,22 @@
 from django.contrib import admin
 from django.urls import path
-from core.views import (tela_produto_nao_encontrado,
-    tela_home_cestia, tela_cesta_compras, tela_ranking_resultados, 
-    tela_mapa_rota, api_scannear_codigo_barra, tela_scanner_camera,
-    api_limpar_cesta, tela_cesta_vazia, api_verificar_alertas_preco,
-    api_remover_produto_cesta, api_alterar_quantidade_cesta,
-    api_sugestoes_pesquisa, login_lojista, tela_atualizar_preco_lojista,
+from core.views import (
+    tela_produto_nao_encontrado,
+    tela_cadastro_produto_cliente,
+    tela_home_cestia,
+    tela_cesta_compras,
+    tela_ranking_resultados,
+    tela_mapa_rota,
+    api_scannear_codigo_barra,
+    tela_scanner_camera,
+    api_limpar_cesta,
+    tela_cesta_vazia,
+    api_verificar_alertas_preco,
+    api_remover_produto_cesta,
+    api_alterar_quantidade_cesta,
+    api_sugestoes_pesquisa,
+    login_lojista,
+    tela_atualizar_preco_lojista,
     api_salvar_preco_rapido
 )
 
@@ -20,9 +31,17 @@ urlpatterns = [
     path('resultado-cestia/', tela_ranking_resultados, name='ranking_visual'),
     path('rota-cestia/', tela_mapa_rota, name='mapa_visual'),
     path('scanner-cestia/', tela_scanner_camera, name='scanner_visual'),
-    path('produto-nao-encontrado/',
-    tela_produto_nao_encontrado,
-    name='produto_nao_encontrado'),
+    path(
+        'produto-nao-encontrado/',
+        tela_produto_nao_encontrado,
+        name='produto_nao_encontrado'
+    ),
+
+    path(
+        'cadastrar-produto/',
+        tela_cadastro_produto_cliente,
+        name='cadastro_produto_cliente'
+    ),
     path('api/scan/', api_scannear_codigo_barra, name='api_scan'),
     path('limpar-cesta/', api_limpar_cesta, name='limpar_cesta'),
     
