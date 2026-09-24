@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from core.views import (
+from core.views import (tela_produto_nao_encontrado,
     tela_home_cestia, tela_cesta_compras, tela_ranking_resultados, 
     tela_mapa_rota, api_scannear_codigo_barra, tela_scanner_camera,
     api_limpar_cesta, tela_cesta_vazia, api_verificar_alertas_preco,
@@ -20,6 +20,9 @@ urlpatterns = [
     path('resultado-cestia/', tela_ranking_resultados, name='ranking_visual'),
     path('rota-cestia/', tela_mapa_rota, name='mapa_visual'),
     path('scanner-cestia/', tela_scanner_camera, name='scanner_visual'),
+    path('produto-nao-encontrado/',
+    tela_produto_nao_encontrado,
+    name='produto_nao_encontrado'),
     path('api/scan/', api_scannear_codigo_barra, name='api_scan'),
     path('limpar-cesta/', api_limpar_cesta, name='limpar_cesta'),
     

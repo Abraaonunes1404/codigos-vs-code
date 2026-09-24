@@ -111,9 +111,18 @@ def api_sugestoes_pesquisa(request):
             })
     return JsonResponse({'sugestoes': resultados})
 
+def tela_produto_nao_encontrado(request):
+    ean = request.GET.get('ean', '').strip()
+
+    return render(
+        request,
+        'cestia/produto_nao_encontrado.html',
+        {'ean': ean}
+    )
+
 def api_scannear_codigo_barra(request):
     """
-    Motor Hibrido Cestia: Processa buscas textuais diretas 
+    Motor Hibrido Cestia: Processa buscas textuais diretas
     vindas da barra de pesquisa ou capturas de imagem.
     """
     ean_recebido = request.GET.get('ean')
@@ -121,30 +130,58 @@ def api_scannear_codigo_barra(request):
 
     if texto_buscado:
         texto_limpo = texto_buscado.strip().lower()
+
         produto_encontrado = Produto.objects.filter(
-            models.Q(nome__icontains=texto_limpo) | 
+            models.Q(nome__icontains=texto_limpo) |
             models.Q(marca__icontains=texto_limpo)
         ).first()
+
         if produto_encontrado:
-            item, criado = ItemCarrinhoDinamico.objects.get_or_create(produto=produto_encontrado)
+            item, criado = ItemCarrinhoDinamico.objects.get_or_create(
+                produto=produto_encontrado
+            )
+
             if not criado:
                 item.quantidade += 1
                 item.save()
-            messages.success(request, f'🔍 Busca: "{produto_encontrado.nome}" adicionado a sacola!')
+
+            messages.success(
+                request,
+                f'🔍 Busca: "{produto_encontrado.nome}" adicionado a sacola!'
+            )
+
         else:
-            messages.error(request, f'❌ Nenhum produto com o termo "{texto_buscado}" foi localizado no Taruma.')
+            messages.error(
+                request,
+                f'❌ Nenhum produto com o termo "{texto_buscado}" foi localizado no Taruma.'
+            )
+
         return redirect('cesta')
 
     if ean_recebido:
         try:
-            produto = Produto.objects.get(gtin_ean=ean_recebido)
-            item, criado = ItemCarrinhoDinamico.objects.get_or_create(produto=produto)
+            produto = Produto.objects.get(
+                gtin_ean=ean_recebido
+            )
+
+            item, criado = ItemCarrinhoDinamico.objects.get_or_create(
+                produto=produto
+            )
+
             if not criado:
                 item.quantidade += 1
                 item.save()
-            messages.success(request, f'🤖 Scanner EAN: {produto.nome} adicionado!')
+
+            messages.success(
+                request,
+                f'🤖 Scanner EAN: {produto.nome} adicionado!'
+            )
+
         except Produto.DoesNotExist:
-            messages.error(request, '❌ Codigo de barras nao cadastrado.')
+            return redirect(
+                f'/produto-nao-encontrado/?ean={ean_recebido}'
+            )
+
         return redirect('cesta')
 
     if request.method == 'POST' and request.FILES.get('imagem_gondola'):
@@ -152,10 +189,10 @@ def api_scannear_codigo_barra(request):
             request,
             '📸 Foto recebida com sucesso. A leitura por IA ainda será ativada.'
         )
+
         return redirect('cesta')
 
     return redirect('cesta')
-
 def tela_cesta_compras(request):
     """
     Renderiza a tela da cesta calculando o preco unitario, o subtotal 

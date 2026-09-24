@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produto não encontrado - Cestia</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+        }
+
+        .celular-container {
+            width: 100%;
+            max-width: 410px;
+            min-height: 100vh;
+            background-color: #1A1A1A;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icone {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .titulo {
+            color: #FF6D00;
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .texto {
+            color: #BBBBBB;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .codigo {
+            width: 100%;
+            background-color: #242424;
+            border: 1px solid #444444;
+            border-radius: 14px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .codigo-label {
+            color: #888888;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .codigo-ean {
+            color: #00E5FF;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .btn-cadastrar,
+        .btn-escanear {
+            width: 100%;
+            max-width: 330px;
+            min-height: 52px;
+            border-radius: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .btn-cadastrar {
+            background: linear-gradient(135deg, #FF6D00, #FF9100);
+            color: #FFFFFF;
+        }
+
+        .btn-escanear {
+            border: 1px solid #555555;
+            color: #CCCCCC;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="celular-container">
+
+        <div class="icone">📦</div>
+
+        <h1 class="titulo">
+            Produto não encontrado
+        </h1>
+
+        <p class="texto">
+            Este código de barras ainda não está cadastrado no Cestia.
+        </p>
+
+        <div class="codigo">
+            <div class="codigo-label">
+                CÓDIGO DE BARRAS
+            </div>
+
+            <div class="codigo-ean">
+                {{ ean }}
+            </div>
+        </div>
+
+        <a href="#" class="btn-cadastrar">
+            + Cadastrar este produto
+        </a>
+
+        <a href="/scanner-cestia/" class="btn-escanear">
+            📷 Escanear outro produto
+        </a>
+
+    </div>
+
+</body>
+</html>
