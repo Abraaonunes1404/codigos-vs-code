@@ -4,3 +4,5 @@ whitenoise==6.12.0
 pandas
 openpyxl
 openai
+psycopg[binary]
+dj-database-url
