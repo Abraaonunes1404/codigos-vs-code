@@ -131,6 +131,22 @@ def tela_cadastro_produto_cliente(request):
     )
 
 def tela_comprovar_preco_produto(request):
+    if request.method == 'POST':
+        ean = request.POST.get('ean', '').strip()
+        nome = request.POST.get('nome', '').strip()
+        marca = request.POST.get('marca', '').strip()
+        preco = request.POST.get('preco', '').strip()
+        foto = request.FILES.get('foto_etiqueta')
+
+        return JsonResponse({
+            'recebido': True,
+            'ean': ean,
+            'nome': nome,
+            'marca': marca,
+            'preco': preco,
+            'foto_recebida': bool(foto),
+        })
+
     ean = request.GET.get('ean', '').strip()
     nome = request.GET.get('nome', '').strip()
     marca = request.GET.get('marca', '').strip()
@@ -144,7 +160,6 @@ def tela_comprovar_preco_produto(request):
             'marca': marca,
         }
     )
-
 
 def api_scannear_codigo_barra(request):
     """

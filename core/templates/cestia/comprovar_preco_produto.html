@@ -177,74 +177,98 @@
             para que o Cestia possa validar a informação.
         </p>
 
-        <div class="produto-box">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
 
-            <div class="produto-nome">
-                {{ nome }}
+            <input
+                type="hidden"
+                name="ean"
+                value="{{ ean }}"
+            >
+
+            <input
+                type="hidden"
+                name="nome"
+                value="{{ nome }}"
+            >
+
+            <input
+                type="hidden"
+                name="marca"
+                value="{{ marca }}"
+            >
+
+            <div class="produto-box">
+
+                <div class="produto-nome">
+                    {{ nome }}
+                </div>
+
+                <div class="produto-marca">
+                    {{ marca }}
+                </div>
+
+                <div class="produto-ean">
+                    EAN: {{ ean }}
+                </div>
+
             </div>
 
-            <div class="produto-marca">
-                {{ marca }}
+            <div class="campo">
+
+                <label for="preco">
+                    PREÇO ENCONTRADO
+                </label>
+
+                <input
+                    type="number"
+                    id="preco"
+                    name="preco"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="0,00"
+                    inputmode="decimal"
+                    required
+                >
+
             </div>
 
-            <div class="produto-ean">
-                EAN: {{ ean }}
+            <div class="aviso">
+                📷 A foto da etiqueta é obrigatória para comprovar
+                que o produto está sendo vendido pelo preço informado.
             </div>
 
-        </div>
-
-        <div class="campo">
-
-            <label for="preco">
-                PREÇO ENCONTRADO
+            <label
+                for="foto-etiqueta"
+                class="btn-foto"
+            >
+                📷 Fotografar etiqueta de preço
             </label>
 
             <input
-                type="number"
-                id="preco"
-                name="preco"
-                step="0.01"
-                min="0.01"
-                placeholder="0,00"
-                inputmode="decimal"
+                type="file"
+                id="foto-etiqueta"
+                name="foto_etiqueta"
+                accept="image/*"
+                capture="environment"
                 required
             >
 
-        </div>
+            <div
+                id="status-foto"
+                class="status-foto"
+            >
+                Nenhuma foto capturada.
+            </div>
 
-        <div class="aviso">
-            📷 A foto da etiqueta é obrigatória para comprovar
-            que o produto está sendo vendido pelo preço informado.
-        </div>
+            <button
+                type="submit"
+                class="btn-confirmar"
+            >
+                Validar preço
+            </button>
 
-        <label
-            for="foto-etiqueta"
-            class="btn-foto"
-        >
-            📷 Fotografar etiqueta de preço
-        </label>
-
-        <input
-            type="file"
-            id="foto-etiqueta"
-            name="foto_etiqueta"
-            accept="image/*"
-            capture="environment"
-        >
-
-        <div
-            id="status-foto"
-            class="status-foto"
-        >
-            Nenhuma foto capturada.
-        </div>
-
-        <button
-            type="button"
-            class="btn-confirmar"
-        >
-            Validar preço
-        </button>
+        </form>
 
         <a
             href="/scanner-cestia/"
