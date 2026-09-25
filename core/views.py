@@ -389,6 +389,22 @@ REGRAS:
             resultado['status_validacao'] = status_validacao
             resultado['mensagem_cestia'] = mensagem_cestia
             resultado['aprovado_cestia'] = aprovado_cestia
+            filial_sugerida = None
+            distancia_filial_km = None
+
+            if aprovado_cestia and latitude and longitude:
+                try:
+                    filial_sugerida, distancia_filial_km = (
+                        encontrar_filial_mais_proxima(
+                            float(latitude),
+                            float(longitude)
+                        )
+                    )
+                except (TypeError, ValueError):
+                    pass
+
+            resultado['filial_sugerida'] = filial_sugerida
+            resultado['distancia_filial_km'] = distancia_filial_km
             return render(
                 request,
                 'cestia/resultado_validacao_preco.html',
