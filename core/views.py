@@ -153,7 +153,8 @@ def tela_comprovar_preco_produto(request):
             '[Cestia] Localizacao recebida:',
             bool(latitude),
             bool(longitude),
-            bool(precisao_localizacao)
+            bool(precisao_localizacao),
+            flush=True
         )
 
         if not foto:
