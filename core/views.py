@@ -376,7 +376,13 @@ REGRAS:
             resultado['status_validacao'] = status_validacao
             resultado['mensagem_cestia'] = mensagem_cestia
             resultado['aprovado_cestia'] = aprovado_cestia
+            resultado['localizacao_recebida'] = (
+                bool(latitude) and bool(longitude)
+            )
 
+            resultado['precisao_localizacao_recebida'] = (
+                bool(precisao_localizacao)
+            )
             return render(
                 request,
                 'cestia/resultado_validacao_preco.html',
