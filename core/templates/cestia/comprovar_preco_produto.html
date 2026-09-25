@@ -346,8 +346,12 @@
         function capturarLocalizacaoAtual() {
             if (!navigator.geolocation) {
                 console.warn(
-                    'Geolocalização não disponível neste navegador.'
+                    'Geolocaliza\u00e7\u00e3o n\u00e3o dispon\u00edvel neste navegador.'
                 );
+
+                statusFoto.textContent =
+                    'Geolocaliza\u00e7\u00e3o n\u00e3o dispon\u00edvel neste navegador.';
+
                 return;
             }
 
@@ -363,15 +367,22 @@
                         posicao.coords.accuracy;
 
                     console.log(
-                        'Localização capturada com sucesso.'
+                        'Localiza\u00e7\u00e3o capturada com sucesso.'
                     );
+
+                    statusFoto.textContent =
+                        'Localiza\u00e7\u00e3o capturada. Agora fotografe a etiqueta.';
                 },
 
                 function (erro) {
                     console.warn(
-                        'Não foi possível obter a localização:',
+                        'N\u00e3o foi poss\u00edvel obter a localiza\u00e7\u00e3o:',
                         erro.message
                     );
+
+                    statusFoto.textContent =
+                        'N\u00e3o foi poss\u00edvel obter sua localiza\u00e7\u00e3o: ' +
+                        erro.message;
                 },
 
                 {
