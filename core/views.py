@@ -149,6 +149,13 @@ def tela_comprovar_preco_produto(request):
             ''
         ).strip()
 
+        print(
+            '[Cestia] Localizacao recebida:',
+            bool(latitude),
+            bool(longitude),
+            bool(precisao_localizacao)
+        )
+
         if not foto:
             return JsonResponse({
                 'erro': 'Nenhuma foto foi enviada.'
