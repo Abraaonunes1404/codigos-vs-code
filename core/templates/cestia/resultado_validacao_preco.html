@@ -206,6 +206,21 @@
 
         {% elif status_validacao == 'aprovado' %}
 
+            {% if filial_sugerida %}
+                <div class="detalhes">
+                    <p>
+                        <strong>Loja sugerida:</strong>
+                        {{ filial_sugerida.supermercado.nome }}
+                        - {{ filial_sugerida.nome_loja }}
+                    </p>
+
+                    <p>
+                        <strong>Distância aproximada:</strong>
+                        {{ distancia_filial_km|floatformat:2 }} km
+                    </p>
+                </div>
+            {% endif %}
+
             <a
                 href="/scanner-cestia/"
                 class="btn btn-principal"
