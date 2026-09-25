@@ -185,6 +185,23 @@
                 name="ean"
                 value="{{ ean }}"
             >
+            <input
+                type="hidden"
+                id="latitude"
+                name="latitude"
+            >
+
+            <input
+                type="hidden"
+                id="longitude"
+                name="longitude"
+            >
+
+            <input
+                type="hidden"
+                id="precisao-localizacao"
+                name="precisao_localizacao"
+            >
 
             <input
                 type="hidden"
@@ -315,7 +332,55 @@
         const statusFoto =
             document.getElementById('status-foto');
 
+        const latitudeInput =
+            document.getElementById('latitude');
+
+        const longitudeInput =
+            document.getElementById('longitude');
+
+        const precisaoLocalizacaoInput =
+            document.getElementById('precisao-localizacao');
+
         let cameraStream = null;
+
+        function capturarLocalizacaoAtual() {
+            if (!navigator.geolocation) {
+                console.warn(
+                    'Geolocalização não disponível neste navegador.'
+                );
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function (posicao) {
+                    latitudeInput.value =
+                        posicao.coords.latitude;
+
+                    longitudeInput.value =
+                        posicao.coords.longitude;
+
+                    precisaoLocalizacaoInput.value =
+                        posicao.coords.accuracy;
+
+                    console.log(
+                        'Localização capturada com sucesso.'
+                    );
+                },
+
+                function (erro) {
+                    console.warn(
+                        'Não foi possível obter a localização:',
+                        erro.message
+                    );
+                },
+
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
 
         async function abrirCameraTraseira() {
             if (
@@ -465,6 +530,7 @@
                 if (cameraStream) {
                     capturarFoto();
                 } else {
+                    capturarLocalizacaoAtual();
                     await abrirCameraTraseira();
                 }
             }
