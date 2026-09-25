@@ -142,6 +142,13 @@ def tela_comprovar_preco_produto(request):
         preco = request.POST.get('preco', '').strip()
         foto = request.FILES.get('foto_etiqueta')
 
+        latitude = request.POST.get('latitude', '').strip()
+        longitude = request.POST.get('longitude', '').strip()
+        precisao_localizacao = request.POST.get(
+            'precisao_localizacao',
+            ''
+        ).strip()
+
         if not foto:
             return JsonResponse({
                 'erro': 'Nenhuma foto foi enviada.'
