@@ -300,7 +300,9 @@
 
             <button
                 type="submit"
+                id="btn-validar-preco"
                 class="btn-confirmar"
+                disabled
             >
                 Validar preço
             </button>
@@ -331,6 +333,9 @@
 
         const statusFoto =
             document.getElementById('status-foto');
+
+        const btnValidarPreco =
+            document.getElementById('btn-validar-preco');
 
         const latitudeInput =
             document.getElementById('latitude');
@@ -372,6 +377,8 @@
 
                     statusFoto.textContent =
                         'Localiza\u00e7\u00e3o capturada. Agora fotografe a etiqueta.';
+
+                    btnValidarPreco.disabled = false;
                 },
 
                 function (erro) {
@@ -383,6 +390,8 @@
                     statusFoto.textContent =
                         'N\u00e3o foi poss\u00edvel obter sua localiza\u00e7\u00e3o: ' +
                         erro.message;
+
+                    btnValidarPreco.disabled = true;
                 },
 
                 {

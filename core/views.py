@@ -170,6 +170,25 @@ def tela_comprovar_preco_produto(request):
             ''
         ).strip()
 
+        try:
+            latitude_num = float(latitude)
+            longitude_num = float(longitude)
+            precisao_num = float(precisao_localizacao)
+
+            if not (-90 <= latitude_num <= 90):
+                raise ValueError
+
+            if not (-180 <= longitude_num <= 180):
+                raise ValueError
+
+            if precisao_num < 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            return JsonResponse({
+                'erro': 'Localizacao obrigatoria para validar o preco.'
+            }, status=400)
+
         if not foto:
             return JsonResponse({
                 'erro': 'Nenhuma foto foi enviada.'
