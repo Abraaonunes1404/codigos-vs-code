@@ -541,8 +541,8 @@
                 if (cameraStream) {
                     capturarFoto();
                 } else {
-                    capturarLocalizacaoAtual();
                     await abrirCameraTraseira();
+                    capturarLocalizacaoAtual();
                 }
             }
         );
