@@ -32,6 +32,27 @@ def tela_home_cestia(request):
     categorias = Categoria.objects.all()
     return render(request, "cestia/home.html", {'categorias': categorias})
 
+def encontrar_filial_mais_proxima(latitude, longitude):
+    filial_mais_proxima = None
+    menor_distancia = None
+
+    for filial in Filial.objects.all():
+        distancia = calcular_distancia(
+            latitude,
+            longitude,
+            filial.latitude,
+            filial.longitude
+        )
+
+        if (
+            menor_distancia is None
+            or distancia < menor_distancia
+        ):
+            menor_distancia = distancia
+            filial_mais_proxima = filial
+
+    return filial_mais_proxima, menor_distancia
+
 def tela_cesta_vazia(request):
     """
     Renderiza a tela de aviso de cesta vazia.
