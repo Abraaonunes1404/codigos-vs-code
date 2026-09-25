@@ -149,14 +149,6 @@ def tela_comprovar_preco_produto(request):
             ''
         ).strip()
 
-        print(
-            '[Cestia] Localizacao recebida:',
-            bool(latitude),
-            bool(longitude),
-            bool(precisao_localizacao),
-            flush=True
-        )
-
         if not foto:
             return JsonResponse({
                 'erro': 'Nenhuma foto foi enviada.'
@@ -376,13 +368,6 @@ REGRAS:
             resultado['status_validacao'] = status_validacao
             resultado['mensagem_cestia'] = mensagem_cestia
             resultado['aprovado_cestia'] = aprovado_cestia
-            resultado['localizacao_recebida'] = (
-                bool(latitude) and bool(longitude)
-            )
-
-            resultado['precisao_localizacao_recebida'] = (
-                bool(precisao_localizacao)
-            )
             return render(
                 request,
                 'cestia/resultado_validacao_preco.html',
