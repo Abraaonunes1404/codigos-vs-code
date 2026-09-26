@@ -348,7 +348,26 @@
 
         let cameraStream = null;
 
+        function atualizarEstadoValidacao() {
+            const temLocalizacao =
+                latitudeInput.value &&
+                longitudeInput.value;
+
+            const temFoto =
+                fotoEtiqueta.files &&
+                fotoEtiqueta.files.length > 0;
+
+            btnValidarPreco.disabled =
+                !(temLocalizacao && temFoto);
+        }
+
         function capturarLocalizacaoAtual() {
+            latitudeInput.value = '';
+            longitudeInput.value = '';
+            precisaoLocalizacaoInput.value = '';
+
+            atualizarEstadoValidacao();
+
             if (!navigator.geolocation) {
                 console.warn(
                     'Geolocaliza\u00e7\u00e3o n\u00e3o dispon\u00edvel neste navegador.'
@@ -357,6 +376,7 @@
                 statusFoto.textContent =
                     'Geolocaliza\u00e7\u00e3o n\u00e3o dispon\u00edvel neste navegador.';
 
+                atualizarEstadoValidacao();
                 return;
             }
 
@@ -378,10 +398,14 @@
                     statusFoto.textContent =
                         'Localiza\u00e7\u00e3o capturada. Agora fotografe a etiqueta.';
 
-                    btnValidarPreco.disabled = false;
+                    atualizarEstadoValidacao();
                 },
 
                 function (erro) {
+                    latitudeInput.value = '';
+                    longitudeInput.value = '';
+                    precisaoLocalizacaoInput.value = '';
+
                     console.warn(
                         'N\u00e3o foi poss\u00edvel obter a localiza\u00e7\u00e3o:',
                         erro.message
@@ -391,7 +415,7 @@
                         'N\u00e3o foi poss\u00edvel obter sua localiza\u00e7\u00e3o: ' +
                         erro.message;
 
-                    btnValidarPreco.disabled = true;
+                    atualizarEstadoValidacao();
                 },
 
                 {
@@ -528,8 +552,9 @@
                     fotoEtiqueta.files =
                         transferencia.files;
 
-                    pararCamera();
+                    atualizarEstadoValidacao();
 
+                    pararCamera();
                     video.style.display =
                         'none';
 
