@@ -302,6 +302,7 @@
                 type="submit"
                 id="btn-validar-preco"
                 class="btn-confirmar"
+                style="display: none;"
                 disabled
             >
                 Validar preço
@@ -356,6 +357,9 @@
             const temFoto =
                 fotoEtiqueta.files &&
                 fotoEtiqueta.files.length > 0;
+
+            btnValidarPreco.style.display =
+                temLocalizacao ? 'block' : 'none';
 
             btnValidarPreco.disabled =
                 !(temLocalizacao && temFoto);
